@@ -469,7 +469,7 @@ class AutomationService {
         await this.populateFontsOptions(photoshopOptions, fontPaths);
         await this.populateSmartObjectsOptions(photoshopOptions, imagePaths, smartObjects);
 
-        this.renditionContent += `\n ---- photoshopOptions for variation ${variationName} ----\n ${JSON.stringify(photoshopOptions, null, 2)}`;
+        this.renditionContent += `\n ---- photoshopOptions for variation ${variationName} and language ${languageName} ----\n ${JSON.stringify(photoshopOptions, null, 2)}`;
  
         // First phase: Modify document with smart objects
         await this.photoshopClient.modifyDocument({
@@ -483,7 +483,7 @@ class AutomationService {
         await this.populateTextsOptions(textOptions, languageContent, textLayers);
         await this.populateFontsOptions(textOptions, fontPaths);
 
-        this.renditionContent += `\n ---- textOptions for variation ${variationName} ----\n ${JSON.stringify(textOptions, null, 2)}`;
+        this.renditionContent += `\n ---- textOptions for variation ${variationName} and language ${languageName} ----\n ${JSON.stringify(textOptions, null, 2)}`;
 
         await this.photoshopClient.editTextLayer({
             inputs: [this.createPhotoshopInput(tempPsdUrl)],
