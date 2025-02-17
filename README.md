@@ -1,41 +1,41 @@
-# 608BlackAntelope
+# Automation Kit
 
-Welcome to my Adobe I/O Application!
+Welcome to the Automation Kit accelerator
 
 ## Setup
 
-- Populate the `.env` file in the project root and fill it as shown [below](#env)
-
-## Local Dev
-
-- `aio app run` to start your local Dev server
-- App will run on `localhost:9080` by default
-
-By default the UI will be served locally but actions will be deployed and served from Adobe I/O Runtime. To start a
-local serverless stack and also run your actions locally use the `aio app run --local` option.
-
-## Test & Coverage
-
-- Run `aio app test` to run unit tests for ui and actions
-- Run `aio app test --e2e` to run e2e tests
+- Populate your `.env` file in your App Builder Project with properties included in `example.env`
 
 ## Deploy & Cleanup
 
-- `aio app deploy` to build and deploy all actions on Runtime and static files to CDN
+- `aio app deploy` to build and deploy all actions on Runtime
 - `aio app undeploy` to undeploy the app
 
 ## Config
 
 ### `.env`
 
-You can generate this file using the command `aio app use`. 
+Edi your `.env`file with the following properties
 
 ```bash
 # This file must **not** be committed to source control
 
-## please provide your Adobe I/O Runtime credentials
-# AIO_RUNTIME_AUTH=
-# AIO_RUNTIME_NAMESPACE=
+FIREFLY_SERVICES_API_CLIENT_ID=<<TBD>>
+FIREFLY_SERVICES_API_CLIENT_SECRET=<<TBD>>
+FIREFLY_SERVICES_API_SCOPES=openid,AdobeID,read_organizations,firefly_api,ff_apis
+INDESIGN_FIREFLY_SERVICES_API_CLIENT_ID=<<TBD>>
+INDESIGN_FIREFLY_SERVICES_API_CLIENT_SECRET=<<TBD>>
+INDESIGN_FIREFLY_SERVICES_API_SCOPES=openid,AdobeID,creative_sdk,indesign_services,creative_cloud
+AZURE_STORAGE_ACCOUNT_NAME=<<TBD>>
+AZURE_STORAGE_ACCOUNT_KEY=<<TBD>>
+AZURE_STORAGE_CONTAINER_NAME=<<TBD>>
+AEM_CERTIFICATE='{
+  "ok": true,
+  "integration": {
+    COPY YOUR CERTIFICATE HERE FROM THE AEM DEVELOPER CONSOLE
+  },
+  "statusCode": 200
+}'
 ```
 
 ### `app.config.yaml`
@@ -46,36 +46,10 @@ You can generate this file using the command `aio app use`.
 
 #### Action Dependencies
 
-- You have two options to resolve your actions' dependencies:
+**Packaged action file**: Add your action's dependencies to the root
+  `package.json` and install them using `npm install`. Then set the `function`
+  field in `app.config.yaml` to point to the **entry file** of your action
+  folder. We will use `webpack` to package your code and dependencies into a
+  single minified js file. The action will then be deployed as a single file.
+  Use this method if you want to reduce the size of your actions.
 
-  1. **Packaged action file**: Add your action's dependencies to the root
-   `package.json` and install them using `npm install`. Then set the `function`
-   field in `app.config.yaml` to point to the **entry file** of your action
-   folder. We will use `webpack` to package your code and dependencies into a
-   single minified js file. The action will then be deployed as a single file.
-   Use this method if you want to reduce the size of your actions.
-
-  2. **Zipped action folder**: In the folder containing the action code add a
-     `package.json` with the action's dependencies. Then set the `function`
-     field in `app.config.yaml` to point to the **folder** of that action. We will
-     install the required dependencies within that directory and zip the folder
-     before deploying it as a zipped action. Use this method if you want to keep
-     your action's dependencies separated.
-
-## Debugging in VS Code
-
-While running your local server (`aio app run`), both UI and actions can be debugged, to do so open the vscode debugger
-and select the debugging configuration called `WebAndActions`.
-Alternatively, there are also debug configs for only UI and each separate action.
-
-## Typescript support for UI
-
-To use typescript use `.tsx` extension for react components and add a `tsconfig.json` 
-and make sure you have the below config added
-```
- {
-  "compilerOptions": {
-      "jsx": "react"
-    }
-  } 
-```
