@@ -2,20 +2,11 @@
 
 Welcome to the Automation Kit accelerator
 
-## Setup
-
-- Populate your `.env` file in your App Builder Project with properties included in `example.env`
-
-## Deploy & Cleanup
-
-- `aio app deploy` to build and deploy all actions on Runtime
-- `aio app undeploy` to undeploy the app
-
 ## Config
 
 ### `.env`
 
-Edi your `.env`file with the following properties
+Edit your `.env` file in your App Builder Project with following properties
 
 ```bash
 # This file must **not** be committed to source control
@@ -53,3 +44,7 @@ AEM_CERTIFICATE='{
   single minified js file. The action will then be deployed as a single file.
   Use this method if you want to reduce the size of your actions.
 
+## Deploy & Cleanup
+
+- `aio app deploy` to build and deploy all actions on Runtime
+- `aio app undeploy` to undeploy the app
