@@ -10,6 +10,7 @@ const { downloadFileConcurrently, uploadFileConcurrently } = require('@adobe/htt
 const { v4: uuid4 } = require('uuid');
 var fs = require("fs");
 const DirectBinary = require('@adobe/aem-upload');
+const { text } = require('stream/consumers');
 
 // Constants
 const DAM_ROOT_PATH = '/content/dam/';
@@ -305,28 +306,23 @@ class AutomationService {
     extractDataFromTemplate(smartObjects, textLayers, layer) {
         for (const subLayer of layer.children) {
             if ('smartObject' == subLayer.type) {
-                const layerNameParts = subLayer.name.split("--");
-                let smartObject;
-                if (layerNameParts.length == 1) {
-                    smartObject = {
-                        layerId: subLayer.id,
-                        imageName: subLayer.name
-                    };
-                } else {
-                    smartObject = {
-                        layerName: subLayer.name,
-                        layerId: subLayer.id,
-                        imageName: layerNameParts[0],
-                        smartCropName: layerNameParts[1]
-                    };
-                }
+                const [imageName, smartCropName] = subLayer.name.split("|");
+                const smartObject = {
+                    layerId: subLayer.id,
+                    layerName: subLayer.name,
+                    imageName: imageName || subLayer.name,
+                    ...(smartCropName && { smartCropName })
+                };
                 smartObjects.push(smartObject)
             } else if ('textLayer' == subLayer.type) {
-                const layerName = {
+                const [key = subLayer.name, tracking = 0] = subLayer.name.split("|");
+                const textLayer = {
+                    layerId: subLayer.id,
                     layerName: subLayer.name,
-                    layerId: subLayer.id
+                    textKey: key,
+                    tracking: +tracking 
                 };
-                textLayers.push(layerName);
+                textLayers.push(textLayer);
             } else {
                 if (subLayer.children) {
                     this.extractDataFromTemplate(smartObjects, textLayers, subLayer);
@@ -405,24 +401,14 @@ class AutomationService {
     async populateTextsOptions(options, languageContent, textLayers) {
         options.layers = options.layers || [];
         for (const [textKey, textValue] of Object.entries(languageContent)) {
-            let textContent = textValue;
-            let textOptions = [0];
-
-            const regex = /(.*)(\[.*\])/g;
-            const matches = regex.exec(textValue);
-            if (matches) {
-                textContent = matches[1];
-                textOptions = JSON.parse(matches[2]);
-            }
-
             for (const textLayer of textLayers) {
-                if (textLayer.layerName === textKey) {
+                if (textLayer.textKey === textKey) {
                     options.layers.push({
                         id: textLayer.layerId,
                         text: {
-                            content: textContent,
+                            content: textValue,
                             characterStyles: [{
-                                tracking: textOptions[0]
+                                tracking: textLayer.tracking
                             }]
                         }
                     });
