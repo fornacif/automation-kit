@@ -66,7 +66,25 @@ cd psd-banners-automation
 2. Create an `index.js` file with the content from:
 [actions/psd-banners-automation/index.js](https://github.com/fornacif/automation-kit/blob/main/actions/psd-banners-automation/index.js)
 
-### 3. Environment Configuration
+### 3. AEM Certificate Setup
+
+Before configuring your environment, you need to obtain an AEM certificate:
+
+1. Navigate to your AEM Cloud Service Developer Console
+2. Go to "Integrations"
+3. Click "Create new technical account"
+4. After creation, click "View" to see the certificate
+5. Copy the entire certificate JSON structure
+
+Once created, the technical account needs appropriate permissions in AEM:
+1. Navigate to AEM > Tools > Security > Users
+2. Find the technical account (it will appear after its first use)
+3. Add it to appropriate groups or grant necessary permissions
+   Required permissions include:
+   - Assets management
+   - Task creation
+
+### 4. Environment Configuration
 
 Add the following properties to your `.env` file:
 
@@ -96,7 +114,7 @@ AZURE_STORAGE_ACCOUNT_KEY=[REDACTED]
 AZURE_STORAGE_CONTAINER_NAME=[REDACTED]
 ```
 
-### 4. App Configuration
+### 5. App Configuration
 
 Update your `app.config.yaml` with the following:
 
