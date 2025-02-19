@@ -60,7 +60,7 @@ cd psd-banners-automation
 ```
 
 2. Create an `index.js` file with the content from:
-[actions/psd-banners-automation/index.js](https://github.com/adobe/aem-psd-banners-automation/blob/main/actions/psd-banners-automation/index.js)
+[actions/psd-banners-automation/index.js](https://github.com/fornacif/automation-kit/blob/main/actions/psd-banners-automation/index.js)
 
 ### 3. Environment Configuration
 
@@ -130,7 +130,7 @@ Download the sample assets containing:
 - Sample images and fonts (`samples/psd-banners-automation/inputs`)
 - Sample texts (`samples/psd-banners-automation/inputs/texts.csv`)
 
-Sample assets can be found in the [samples/psd-banners-automation](https://github.com/adobe/aem-psd-banners-automation/blob/main/samples/psd-banners-automation) directory of this repository.
+Sample assets can be found in the [samples/psd-banners-automation](https://github.com/fornacif/automation-kit/tree/main/samples/psd-banners-automation) directory of this repository.
 
 ### Image and Layer Naming Convention
 
