@@ -22,11 +22,32 @@ The solution leverages these technologies to create an automated workflow for ba
 
 ### 1. Initialize Adobe App Builder Project
 
+#### Console Setup
 1. Navigate to [Adobe Developer Console](https://developer.adobe.com/console)
 2. Click "Create new project"
 3. Select "Project from template"
 4. Name your project (e.g., "Banners Automation")
 5. Click "Add to Project"
+
+#### Local Project Setup
+1. Create a new directory for your project and navigate to it:
+```bash
+mkdir automation
+cd automation
+```
+
+2. Initialize the App Builder project locally:
+```bash
+aio app init
+```
+
+3. During initialization:
+   - Select your organization when prompted
+   - Choose the App Builder project you created in the Console
+   - Select "No" for adding any optional features
+   - Choose your preferred template when prompted (typically "Basic")
+
+4. After initialization, your project structure will be created with the necessary configuration files
 
 ### 2. Setup Action
 
@@ -91,9 +112,8 @@ actions:
 ## Sample Assets
 
 Download the sample assets package containing:
-- Base PSD template (`samples/banner-template.psd`)
-- Sample images (`samples/images/`)
-- Required fonts (`samples/fonts/`)
+- Base PSD template (`samples/template.psd`)
+- Sample images and fonts (`samples/inputs`)
 
 Sample assets can be found in the `samples` directory of this repository.
 
@@ -123,10 +143,12 @@ The deployment will provide you with a web action URL that will be used in the A
 ### Execute Automation
 
 1. Create a new folder
-2. Create 2 sub folders: `INPUTS` and `OUTPUTS`
-3. Upload your assets (images and font) to the `INPUTS` folder
-3. Apply the "PSD Banners Automation" processing profile to the PSD file
-4. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+2. Upload the Base PSD Template
+3. Create 2 sub folders: `INPUTS` and `OUTPUTS`
+4. Upload your assets (images and font) to the `INPUTS` folder
+5. Apply the "PSD Banners Automation" processing profile to the PSD file
+6. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+7. Check that new banners have been created inside the `OUTPUTS` folder
 
 ## Troubleshooting
 
