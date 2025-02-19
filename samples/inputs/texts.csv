@@ -1,10 +1,14 @@
 variation,lang,key,value
-climbing|cycling|skiing|surfing,en,website,www.wknd.com[200]
-climbing|cycling|skiing|surfing,fr,website,www.wknd.fr[200]
-climbing,en|fr,title,Climbing
-cycling,en|fr,title,Cycling
-skiing,en|fr,title,Skiing
-surfing,en|fr,title,Surfing
+climbing|cycling|skiing|surfing,en,website,www.wknd.com
+climbing|cycling|skiing|surfing,fr,website,www.wknd.fr
+climbing,en|fr,title,"Climbing"
+cycling,en,title,"Cycling"
+skiing,en,title,"Skiing"
+surfing,en,title,"Surfing"
+climbing,fr,title,"Escalade"
+cycling,fr,title,"Cyclisme"
+skiing,fr,title,"Ski"
+surfing,fr,title,"Surf"
 climbing,en,text,"Feel the raw adventure and excitement of our guided rock climbing experience."
 cycling,en,text,"Join us as we explore the rugged, stunningly gorgeous landscape of southern Utah."
 skiing,en,text,"If you’re a slopes enthusiast, you know that one run in the backcountry is worth ten in the front country."

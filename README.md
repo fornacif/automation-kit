@@ -137,13 +137,13 @@ Sample assets can be found in the `samples` directory of this repository.
 #### Image Files
 Image files in the `inputs` folder must follow this naming pattern:
 ```
-<variation>-<layer_image_name>.<extension>
+<variation>--<layer_image_name>.<extension>
 ```
 For example:
 ```
-summer_sale-hero_image.jpeg
-summer_sale-product_shot.png
-winter_promo-background.tiff
+summer_sale--hero_image.jpeg
+summer_sale--product_shot.png
+winter_promo--background.tiff
 ```
 
 #### PSD Layer Names
@@ -151,10 +151,10 @@ The layer names in your PSD template must follow these rules:
 
 1. **Image Layers**: The layer name must exactly match the `layer_image_name` part of your image filename:
    ```
-   Image file: summer_sale-hero_image.jpg => PSD layer name: hero_image
+   Image file: summer_sale--hero_image.jpg => PSD layer name: hero_image
    ```
 
-2. **Smart Crop**: To use Dynamic Media's Smart Crop feature, append the smart crop name using a pipe separator:
+2. **Smart Crop**: To use Dynamic Media's Smart Crop feature, append the Smart Crop name using a pipe separator:
    ```
    hero_image|1800x600 => Will apply '1800x600' Smart Crop to hero_image
    ```
@@ -163,23 +163,43 @@ The automation will match the `variation` from your image filename with the `var
 
 ### Text Content Structure
 
-The `texts.csv` file contains the text content for different variants and languages. The structure is:
+The `texts.csv` file contains the text content for different variants and languages. Each value must be enclosed in double quotes to ensure proper CSV formatting. The structure is:
 
 ```csv
-variant_name,lang,text_key,text_value
-summer_sale,en,headline,"Summer Sale 50% Off"
-summer_sale,en,cta,"Shop Now"
-summer_sale,fr,headline,"Soldes d'été -50%"
-summer_sale,fr,cta,"Acheter"
+variation,lang,key,value
+climbing|cycling|skiing|surfing,en,website,www.wknd.com
+climbing|cycling|skiing|surfing,fr,website,www.wknd.fr
+climbing,en|fr,title,"Climbing"
+cycling,en,title,"Cycling"
+skiing,en,title,"Skiing"
+surfing,en,title,"Surfing"
+climbing,fr,title,"Escalade"
+cycling,fr,title,"Cyclisme"
+skiing,fr,title,"Ski"
+surfing,fr,title,"Surf"
 ```
 
 Where:
-- `variation`: Identifies the banner variation
-- `lang`: Language code
+- `variation`: Identifies the banner variation(s)
+- `lang`: Language code(s)
 - `key`: Must match the text layer name in the PSD
 - `value`: The actual text content to be inserted
 
-Your PSD text layer names must exactly match the `text_key` values in the CSV file.
+To optimize your CSV file, you can use pipe separators (`|`) in both the `variation` and `lang` columns to denormalize the content:
+
+1. **Multiple Variations**: When the same text applies to multiple variations, list them with pipes:
+   ```csv
+   climbing|cycling|skiing|surfing,en,website,www.wknd.com
+   ```
+   This single line will apply to all four variations.
+
+2. **Multiple Languages**: When the same text applies to multiple languages, list them with pipes:
+   ```csv
+   climbing,en|fr,title,Climbing
+   ```
+   This will use the same value for both English and French.
+
+The automation will automatically denormalize these entries when processing the PSD template. Your PSD text layer names must exactly match the `key` values in the CSV file.
 
 ## AEM Configuration
 
