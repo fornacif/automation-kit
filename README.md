@@ -125,12 +125,12 @@ The deployment will provide you with a web action URL that will be used in the A
 
 ## Sample Assets
 
-Download the sample assets package containing:
-- Base PSD template (`samples/psd-banners-automation/template.psd`)
+Download the sample assets containing:
+- Sample PSD template (`samples/psd-banners-automation/template.psd`)
 - Sample images and fonts (`samples/psd-banners-automation/inputs`)
 - Sample texts (`samples/psd-banners-automation/inputs/texts.csv`)
 
-Sample assets can be found in the `samples` directory of this repository.
+Sample assets can be found in the [samples/psd-banners-automation](https://github.com/adobe/aem-psd-banners-automation/blob/main/samples/psd-banners-automation) directory of this repository.
 
 ### Image and Layer Naming Convention
 
