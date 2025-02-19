@@ -276,11 +276,7 @@ Remember that Smart Crop names in this configuration must match the ones used in
 
 ### Common Issues and Solutions
 
-1. **Action Deployment Fails**
-   - Verify your Adobe I/O CLI credentials
-   - Check the project configuration in the Developer Console
-
-2. **Processing Profile Errors**
+1. **Processing Profile Errors**
    - Verify the web action URL is correct and accessible
    - Check Tasks in the AEM Inbox to see if some errors happened
    - Check the action logs using:
