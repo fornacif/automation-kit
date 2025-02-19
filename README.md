@@ -1,14 +1,49 @@
 # Automation Kit
 
-Welcome to the Automation Kit accelerator
+## Introduction
 
-## Config
+This automation kit provides a comprehensive solution for automating banners creation using various Adobe services:
 
-### `.env`
+- Adobe Firefly Services API for Photoshop-powered creative operations
+- AEM Assets for digital asset management
+- Dynamic Media for rich media delivery and Smart Croping features
+- Adobe App Builder for extensible cloud-native applications and API orchestration
 
-Edit your `.env` file in your App Builder Project with following properties
+The solution leverages these technologies to create an automated workflow for banners generation, significantly reducing manual effort and ensuring consistency across marketing materials.
 
+## Prerequisites
+
+- Adobe Developer Console access
+- AEM Cloud Service install
+- Node.js 18+ installed
+- Adobe I/O CLI installed (`npm install -g @adobe/aio-cli`)
+
+## Project Setup
+
+### 1. Initialize Adobe App Builder Project
+
+1. Navigate to [Adobe Developer Console](https://developer.adobe.com/console)
+2. Click "Create new project"
+3. Select "Project from template"
+4. Name your project (e.g., "Banners Automation")
+5. Click "Add to Project"
+
+### 2. Setup Action
+
+1. Create a new directory for your action:
 ```bash
+mkdir actions/psd-banners-automation
+cd actions/psd-banners-automation
+```
+
+2. Create an `index.js` file with the following content:
+Action file (`samples/index.js`)
+
+### 3. Environment Configuration
+
+Add the following properties to your `.env` file:
+
+```plaintext
 # This file must **not** be committed to source control
 
 FIREFLY_SERVICES_API_CLIENT_ID=[REDACTED]
@@ -29,22 +64,94 @@ AEM_CERTIFICATE='{
 }'
 ```
 
-### `app.config.yaml`
+### 4. App Configuration
 
-- Main configuration file that defines an application's implementation. 
-- More information on this file, application configuration, and extension configuration 
-  can be found [here](https://developer.adobe.com/app-builder/docs/guides/appbuilder-configuration/#appconfigyaml)
+Update your `app.config.yaml` with the following:
 
-#### Action Dependencies
+```yaml
+actions:
+  psd-banners-automation:
+    function: actions/psd-banners-automation/index.js
+    web: 'yes'
+    runtime: nodejs:18
+    limits:
+      memorySize: 512
+      concurrency: 10
+      timeout: 600000
+    inputs:
+      LOG_LEVEL: info
+      fireflyServicesApiClientId: $FIREFLY_SERVICES_API_CLIENT_ID
+      fireflyServicesApiClientSecret: $FIREFLY_SERVICES_API_CLIENT_SECRET
+      fireflyServicesApiScopes: $FIREFLY_SERVICES_API_SCOPES
+      aemCertificate: $AEM_CERTIFICATE
+    annotations:
+      require-adobe-auth: true
+```
 
-**Packaged action file**: Add your action's dependencies to the root
-  `package.json` and install them using `npm install`. Then set the `function`
-  field in `app.config.yaml` to point to the **entry file** of your action
-  folder. We will use `webpack` to package your code and dependencies into a
-  single minified js file. The action will then be deployed as a single file.
-  Use this method if you want to reduce the size of your actions.
+## Sample Assets
 
-## Deploy & Cleanup
+Download the sample assets package containing:
+- Base PSD template (`samples/banner-template.psd`)
+- Sample images (`samples/images/`)
+- Required fonts (`samples/fonts/`)
 
-- `aio app deploy` to build and deploy all actions on Runtime
-- `aio app undeploy` to undeploy the app
+Sample assets can be found in the `samples` directory of this repository.
+
+## Deployment
+
+Deploy your application using the Adobe I/O CLI:
+
+```bash
+aio app deploy
+```
+
+The deployment will provide you with a web action URL that will be used in the AEM Processing Profile.
+
+## AEM Configuration
+
+### Setup Processing Profile
+
+1. Navigate to AEM Tools > Assets > Processing Profiles
+2. Create a new profile named "PSD Banners Automation"
+3. Add a new processing step with the following configuration:
+   - Type: External Process
+   - Endpoint: {Your deployed web action URL}
+   - Parameters:
+     1. outputFormatType with value image/jpeg or image/png
+     2. Others...
+
+### Execute Automation
+
+1. Create a new folder
+2. Create 2 sub folders: `INPUTS` and `OUTPUTS`
+3. Upload your assets (images and font) to the `INPUTS` folder
+3. Apply the "PSD Banners Automation" processing profile to the PSD file
+4. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+1. **Action Deployment Fails**
+   - Verify your Adobe I/O CLI credentials
+   - Check the project configuration in the Developer Console
+
+2. **Processing Profile Errors**
+   - Verify the web action URL is correct and accessible
+   - Check the action logs using:
+     ```bash
+     aio app logs
+     ```
+   - Ensure all required parameters are properly configured
+
+### Debug Mode
+
+Enable debug logging by:
+1. Setting `LOG_LEVEL=debug` in your `.env` file
+2. Redeploying the application
+3. Monitoring logs during execution:
+   ```bash
+   aio app logs -f
+   ```
+
+For additional support, consult the Adobe Developer Documentation.
