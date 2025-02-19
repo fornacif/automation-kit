@@ -185,7 +185,7 @@ Where:
 - `key`: Must match the text layer name in the PSD
 - `value`: The actual text content to be inserted
 
-To optimize your CSV file, you can use pipe separators (`|`) in both the `variation` and `lang` columns to denormalize the content:
+To optimize your CSV file, you can use pipe separators (`|`) in both the `variation` and `lang` columns to normalize the content:
 
 1. **Multiple Variations**: When the same text applies to multiple variations, list them with pipes:
    ```csv
