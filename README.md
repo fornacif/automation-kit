@@ -17,7 +17,7 @@ This practical implementation serves as a powerful demonstration of Content Auto
 ## Prerequisites
 
 - Adobe Developer Console access
-- App Builder Enable
+- App Builder
 - AEM Cloud Service install with Dynamic Media activated (compatible with Dynamic Media with Open API)
 - Firefly Services API access (credentials)
 - Node.js 18+ installed
