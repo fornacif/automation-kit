@@ -18,7 +18,8 @@ This practical implementation serves as a powerful demonstration of Content Auto
 
 - Adobe Developer Console access
 - App Builder
-- AEM Cloud Service install with Dynamic Media activated (compatible with Dynamic Media with Open API)
+- AEM as a Cloud Service instance
+- Dynamic Media or Dynamic Media with Open API
 - Firefly Services API access (credentials)
 - Node.js 18+ installed
 - Adobe I/O CLI installed (`npm install -g @adobe/aio-cli`)
