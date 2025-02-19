@@ -126,9 +126,9 @@ The deployment will provide you with a web action URL that will be used in the A
 ## Sample Assets
 
 Download the sample assets package containing:
-- Base PSD template (`samples/template.psd`)
-- Sample images and fonts (`samples/inputs`)
-- Sample texts (`samples/inputs/texts.csv`)
+- Base PSD template (`samples/psd-banners-automation/template.psd`)
+- Sample images and fonts (`samples/psd-banners-automation/inputs`)
+- Sample texts (`samples/psd-banners-automation/inputs/texts.csv`)
 
 Sample assets can be found in the `samples` directory of this repository.
 
