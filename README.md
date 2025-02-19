@@ -143,7 +143,6 @@ For example:
 ```
 summer_sale--hero_image.jpeg
 summer_sale--product_shot.png
-winter_promo--background.tiff
 ```
 
 #### PSD Layer Names
