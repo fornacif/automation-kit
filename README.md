@@ -85,6 +85,17 @@ AEM_CERTIFICATE='{
 }'
 ```
 
+And optionally for InDesign (INDD) Banners Automation, please note that an Azure Storage Account is required.
+
+```plaintext
+INDESIGN_FIREFLY_SERVICES_API_CLIENT_ID=[REDACTED]
+INDESIGN_FIREFLY_SERVICES_API_CLIENT_SECRET=[REDACTED]
+INDESIGN_FIREFLY_SERVICES_API_SCOPES=openid,AdobeID,creative_sdk,indesign_services,creative_cloud
+AZURE_STORAGE_ACCOUNT_NAME=[REDACTED]
+AZURE_STORAGE_ACCOUNT_KEY=[REDACTED]
+AZURE_STORAGE_CONTAINER_NAME=[REDACTED]
+```
+
 ### 4. App Configuration
 
 Update your `app.config.yaml` with the following:
