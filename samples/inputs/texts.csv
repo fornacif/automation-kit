@@ -1,0 +1,15 @@
+variation,lang,key,value
+climbing|cycling|skiing|surfing,en,website,www.wknd.com[200]
+climbing|cycling|skiing|surfing,fr,website,www.wknd.fr[200]
+climbing,en|fr,title,Climbing
+cycling,en|fr,title,Cycling
+skiing,en|fr,title,Skiing
+surfing,en|fr,title,Surfing
+climbing,en,text,"Feel the raw adventure and excitement of our guided rock climbing experience."
+cycling,en,text,"Join us as we explore the rugged, stunningly gorgeous landscape of southern Utah."
+skiing,en,text,"If you’re a slopes enthusiast, you know that one run in the backcountry is worth ten in the front country."
+surfing,en,text,"Experience local surf guides will take care of all the logistics and find the best spots for you."
+climbing,fr,text,"Vivez l'aventure pure et l'excitation de notre expérience d'escalade guidée."
+cycling,fr,text,"Rejoignez-nous pour explorer les paysages accidentés et spectaculaires du sud de l'Utah."
+skiing,fr,text,"En tant que passionné de glisse, vous savez qu'une descente en hors-piste vaut dix descentes sur piste."
+surfing,fr,text,"Nos guides de surf locaux s'occupent de toute la logistique et trouvent les meilleurs spots pour vous."
