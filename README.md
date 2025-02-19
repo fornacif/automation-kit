@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This Automation Kit provides a comprehensive solution for automating banners creation using various Adobe services, making it an ideal demonstration tool for Solution Consultants (SCs), Professional Services, Partner or Customers to showcase Content Automation capabilities aligned with the Content Supply Chain play. 
+This Automation Kit provides a comprehensive solution for automating banners creation using various Adobe services, making it an ideal demonstration tool to showcase Content Automation capabilities aligned with the Content Supply Chain play. 
 
 The kit demonstrates how organizations can transform their content creation workflow through:
 - Adobe Firefly Services API for Photoshop-powered creative operations, automated content generation and manipulation
