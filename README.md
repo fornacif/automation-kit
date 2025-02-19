@@ -61,7 +61,7 @@ cd psd-banners-automation
 ```
 
 2. Create an `index.js` file with the content from:
-[actions/psd-banners-automation/index.js](https://github.com/fornacif/automation-kit/blob/main/actions/psd-banners-automation/index.js)
+[actions/psd-banners-automation/index.js](https://github.com/adobe/aem-psd-banners-automation/blob/main/actions/psd-banners-automation/index.js)
 
 ### 3. Environment Configuration
 
@@ -112,7 +112,7 @@ actions:
       require-adobe-auth: true
 ```
 
-More actions can be configured like showned in [app.config.yaml](https://github.com/fornacif/automation-kit/blob/main/app.config.yaml) 
+More actions can be configured like showned in the `app.config.yaml` present in the repository.
 
 ## Deployment
 
@@ -157,8 +157,7 @@ The layer names in your PSD template must follow these rules:
 
 2. **Smart Crop**: To use Dynamic Media's Smart Crop feature, append the smart crop name using a pipe separator:
    ```
-   hero_image|social_crop => Will apply 'social_crop' smart cropping to hero_image
-   product_shot|banner_crop => Will apply 'banner_crop' smart cropping to product_shot
+   hero_image|1800x600 => Will apply '1800x600' smart cropping to hero_image
    ```
 
 The automation will match the `variation` from your image filename with the `variation` in your CSV file to find the correct image for each layer.
@@ -184,6 +183,24 @@ Where:
 Your PSD text layer names must exactly match the `text_key` values in the CSV file.
 
 ## AEM Configuration
+
+### Setup Smart Crop (Optional)
+
+To enable Smart Crop functionality for your images:
+
+1. Navigate to AEM Tools > Assets > Dynamic Media Configuration
+2. Create or edit a Smart Crop Configuration:
+   - Select Image Profile
+   - Click "Add Smart Crop"
+   - Configure the breakpoints based on your needs:
+     ```
+     1800x600: 1800x600 (Web Banners)
+     1200x630: 1200x630 (Facebook/Twitter)
+     1080x1080: 1080x1080 (Instagram)
+     ```
+   - Save the configuration
+
+Remember that Smart Crop names in this configuration must match the ones used in your PSD layer names (e.g., `hero_image|1800x600`).
 
 ### Setup Processing Profile
 
