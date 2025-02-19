@@ -71,7 +71,7 @@ cd psd-banners-automation
 Add the following properties to your `.env` file:
 
 ```plaintext
-# This file must **not** be committed to source control
+# This file must not be committed to source control
 
 FIREFLY_SERVICES_API_CLIENT_ID=[REDACTED]
 FIREFLY_SERVICES_API_CLIENT_SECRET=[REDACTED]
