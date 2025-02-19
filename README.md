@@ -60,8 +60,8 @@ mkdir psd-banners-automation
 cd psd-banners-automation
 ```
 
-2. Create an `index.js` file with the following content:
-Action file (`actions/psd-banners-automation/index.js`)
+2. Create an `index.js` file with the content from:
+[actions/psd-banners-automation/index.js](https://github.com/fornacif/automation-kit/blob/main/actions/psd-banners-automation/index.js)
 
 ### 3. Environment Configuration
 
@@ -112,7 +112,7 @@ actions:
       require-adobe-auth: true
 ```
 
-More actions can be configured like showned in the `app.config.yaml` present in the repository.
+More actions can be configured like showned in [app.config.yaml](https://github.com/fornacif/automation-kit/blob/main/app.config.yaml) 
 
 ## Deployment
 
@@ -217,4 +217,20 @@ Your PSD text layer names must exactly match the `text_key` values in the CSV fi
 
 2. **Processing Profile Errors**
    - Verify the web action URL is correct and accessible
-   - Check the action
+   - Check the action logs using:
+     ```bash
+     aio app logs
+     ```
+   - Ensure all required parameters are properly configured
+
+### Debug Mode
+
+Enable debug logging by:
+1. Setting `LOG_LEVEL=debug` in your `.env` file
+2. Redeploying the application
+3. Monitoring logs during execution:
+   ```bash
+   aio app logs -f
+   ```
+
+For additional support, consult the Adobe Developer Documentation.
