@@ -111,7 +111,7 @@ actions:
       require-adobe-auth: true
 ```
 
-More actions can be configured like showned in the `app.config.yaml` present in the repository.
+More actions can be configured like showned in the [app.config.yaml](https://github.com/fornacif/automation-kit/blob/main/app.config.yaml) present in the repository.
 
 ## Deployment
 
