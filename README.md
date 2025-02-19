@@ -6,7 +6,7 @@ This Automation Kit provides a comprehensive solution for automating banners cre
 
 The kit demonstrates how organizations can transform their content creation workflow through:
 - Adobe Firefly Services API for Photoshop-powered creative operations, automated content generation and manipulation
--AEM Assets for digital asset management, showcasing enterprise-scale content organization and workflow automation
+- AEM Assets for digital asset management, showcasing enterprise-scale content organization and workflow automation
 - Dynamic Media for rich media delivery and Smart Cropping features, demonstrating automated responsive design capabilities
 - Adobe App Builder for extensible cloud-native applications and API orchestration, highlighting integration possibilities and customization options
 
