@@ -233,11 +233,11 @@ The automation will automatically denormalize these entries when processing the 
 
 To enable Smart Crop functionality for your images:
 
-1. Navigate to AEM Tools > Assets > Dynamic Media Configuration
-2. Create or edit a Smart Crop Configuration:
-   - Select Image Profile
-   - Click "Add Smart Crop"
-   - Configure the breakpoints based on your needs:
+1. Navigate to AEM Tools > Assets > Image Profiles
+2. Create or edit an Image Processing Profiles
+   - Name your Image Processing Profiles
+   - Select "Smart Crop" Type in Cropping Options
+   - Configure Responsive Image Crop based on your needs:
      ```
      1800x600: 1800x600 (Web Banners)
      1200x630: 1200x630 (Facebook/Twitter)
@@ -262,12 +262,15 @@ Remember that Smart Crop names in this configuration must match the ones used in
 ### Execute Automation
 
 1. Create a new folder
-2. Upload your PSD Template
-3. Create 2 sub folders: `INPUTS` and `OUTPUTS`
-4. Upload your assets (images and font) to the `INPUTS` folder
-5. Apply the "PSD Banners Automation" processing profile to the PSD file
-6. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
-7. Check that new banners have been created inside the `OUTPUTS` folder
+2. Upload your PSD template
+3. Create two subfolders: `INPUTS` and `OUTPUTS`
+4. Apply the Image Processing Profile you created previously
+5. (Optional) Enable Dynamic Media on the `INPUTS` folder.
+6. (Optional) If Dynamic Media with Open API is enabled, simply approve the assets once they are uploaded
+7. Upload your assets (images and fonts) to the `INPUTS` folder
+8. Trigger mannually the "PSD Banners Automation" processing profile to the PSD file (Reprocess Assets)
+9. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+10. Check that new banners have been created inside the `OUTPUTS` folder
 
 ## Troubleshooting
 
