@@ -29,7 +29,6 @@ The solution leverages these technologies to create an automated workflow for ba
 2. Click "Create new project"
 3. Select "Project from template"
 4. Name your project (e.g., "Banners Automation")
-5. Click "Add to Project"
 
 #### Local Project Setup
 1. Create a new directory for your project and navigate to it:
@@ -157,7 +156,7 @@ The layer names in your PSD template must follow these rules:
 
 2. **Smart Crop**: To use Dynamic Media's Smart Crop feature, append the smart crop name using a pipe separator:
    ```
-   hero_image|1800x600 => Will apply '1800x600' smart cropping to hero_image
+   hero_image|1800x600 => Will apply '1800x600' Smart Crop to hero_image
    ```
 
 The automation will match the `variation` from your image filename with the `variation` in your CSV file to find the correct image for each layer.
@@ -234,6 +233,7 @@ Remember that Smart Crop names in this configuration must match the ones used in
 
 2. **Processing Profile Errors**
    - Verify the web action URL is correct and accessible
+   - Check Tasks in the AEM Inbox to see if some errors happened
    - Check the action logs using:
      ```bash
      aio app logs
