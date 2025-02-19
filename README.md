@@ -31,7 +31,7 @@ This practical implementation serves as a powerful demonstration of Content Auto
 #### Console Setup
 1. Navigate to [Adobe Developer Console](https://developer.adobe.com/console)
 2. Click "Create new project"
-3. Select "Project from template"
+3. Select "Project from template" and select "App Builder"
 4. Name your project (e.g., "Banners Automation")
 
 #### Local Project Setup
