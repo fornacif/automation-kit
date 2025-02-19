@@ -185,7 +185,7 @@ The layer names in your PSD template must follow these rules:
    hero_image|1800x600 => Will apply '1800x600' Smart Crop to hero_image
    ```
 
-The automation will match the `variation` from your image filename with the `variation` in your CSV file to find the correct image for each layer.
+The automation will generate a new PSD template for each variation and produce corresponding image renditions (JPEG or PNG).
 
 ### Text Content Structure
 
