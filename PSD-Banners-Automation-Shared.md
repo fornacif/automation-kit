@@ -124,10 +124,10 @@ Remember that Smart Crop names in this configuration must match the ones used in
 2. Create a new profile named "PSD Banners Automation"
 3. Add a new Custom Processing Services with the following configuration:
    - `inputs`as Rendition Name and `json` as extension
-   - Endpoint URL: {Your deployed web action URL}
+   - Endpoint URL: `https://85792-608blackantelope-stage.adobeioruntime.net/api/v1/web/demo-kit.processing-profiles/psd-banners-automation-shared`
    - Services Parameters:
-     1. outputFormatType as key and `image/jpeg` or `image/png` as value
-     2. certificate as key and the previously created [AEM JSON Certificate](#aem-certificate-setup) as value
+     1. `outputFormatType` as key and `image/jpeg` or `image/png` as value
+     2. `certificate` as key and the previously created [AEM JSON Certificate](#aem-certificate-setup) as value
    - Set `image/vnd.adobe.photoshop` for included Mime Type
 
 ### Execute Automation

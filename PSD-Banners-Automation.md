@@ -237,10 +237,9 @@ Remember that Smart Crop names in this configuration must match the ones used in
 2. Create a new profile named "PSD Banners Automation"
 3. Add a new Custom Processing Services with the following configuration:
    - `inputs`as Rendition Name and `json` as extension
-   - Endpoint URL: {Your deployed web action URL}
+   - [Endpoint URL previously deployed](#deployment): {Your deployed web action URL}
    - Services Parameters:
-     1. outputFormatType as key and `image/jpeg` or `image/png` as value
-     2. Others...
+     1. `outputFormatType` as key and `image/jpeg` or `image/png` as value
    - Set `image/vnd.adobe.photoshop` for included Mime Type
 
 ### Execute Automation
