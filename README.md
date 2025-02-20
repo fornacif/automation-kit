@@ -18,21 +18,21 @@ This practical implementation serves as a powerful demonstration of Content Auto
 
 ### PSD Banners Automation
 
-The automation will generate a new PSD template for each variation and produce corresponding image renditions (JPEG or PNG).
+The PSD Banners Automation system automates the creation of banner variations by generating new PSD templates and converting them into web-ready image formats (JPEG or PNG). This process streamlines marketing asset production and ensures consistency across all banner variations.
 
 1. [Self hosted](https://github.com/fornacif/automation-kit/blob/main/psd-banners-automation.md)
 2. [Shared service](https://github.com/fornacif/automation-kit/blob/main/psd-banners-automation-shared.md)
 
 ### INDD Banners Automation
 
-The automation will generate a new INDD template for each variation and produce corresponding renditions (PDF, JPEG or PNG).
+The INDD Banners Automation system automates the creation of banner variations by generating new InDesign templates and converting them into print-ready format (PDF) or web-ready image formats (JPEG or PNG). This process streamlines marketing asset production and ensures consistency across all banner variations.
 
 1. TODO: INDD Banners Automation (Self hosted)
 2. TODO: INDD Banners Automation (Shared service)
 
 ### Product Crop Automation
 
-The automation will generate a new asset rendition.
+The Product Crop feature provides intelligent image cropping capabilities through AI-powered subject detection, ensuring the product remains perfectly centered and prominent in all generated renditions. The system automatically generates a new asset rendition with generated visual.
 
 1. TODO: Product Crop Automation (Self hosted)
 2. TODO: Product Crop Automation (Shared service)
