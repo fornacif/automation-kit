@@ -1,58 +1,11 @@
-# PSD Banners Automation (Self hosted)
+# PSD Banners Automation (Shared service)
 
 ## Prerequisites
 
-- Adobe Developer Console access
-- App Builder
 - AEM as a Cloud Service instance
 - Dynamic Media or Dynamic Media with Open API
-- Firefly Services API access (credentials)
-- Node.js 18+ installed
-- Adobe I/O CLI installed (`npm install -g @adobe/aio-cli`)
 
-## Project Setup
-
-### 1. Initialize Adobe App Builder Project
-
-#### Console Setup
-1. Navigate to [Adobe Developer Console](https://developer.adobe.com/console)
-2. Click "Create new project from template"
-3. Select "App Builder" template
-4. Name your project (e.g., "Banners Automation")
-
-#### Local Project Setup
-1. Create a new directory for your project and navigate to it:
-```bash
-mkdir automation
-cd automation
-```
-
-2. Initialize the App Builder project locally:
-```bash
-aio app init
-```
-
-3. During initialization:
-   - Select your organization when prompted
-   - Choose the App Builder project you created in the Console
-   - Select "No" for adding any optional features
-   - Choose your preferred template when prompted (typically "Basic")
-
-4. After initialization, your project structure will be created with the necessary configuration files
-
-### 2. Setup Action
-
-1. Create a new directory for your action:
-```bash
-cd actions
-mkdir psd-banners-automation
-cd psd-banners-automation
-```
-
-2. Create an `index.js` file with the content from:
-[actions/psd-banners-automation/index.js](https://github.com/fornacif/automation-kit/blob/main/actions/psd-banners-automation/index.js)
-
-### 3. AEM Certificate Setup
+## AEM Certificate Setup
 
 Before configuring your environment, you need to obtain an AEM certificate:
 
@@ -69,72 +22,6 @@ Once created, the technical account needs appropriate permissions in AEM:
    Required permissions include:
    - Assets management
    - Task creation
-
-### 4. Environment Configuration
-
-Add the following properties to your `.env` file:
-
-```plaintext
-# This file must not be committed to source control
-
-FIREFLY_SERVICES_API_CLIENT_ID=[REDACTED]
-FIREFLY_SERVICES_API_CLIENT_SECRET=[REDACTED]
-FIREFLY_SERVICES_API_SCOPES=openid,AdobeID,read_organizations,firefly_api,ff_apis
-AEM_CERTIFICATE='{
-  "ok": true,
-  "integration": {
-    COPY YOUR CERTIFICATE HERE FROM THE AEM DEVELOPER CONSOLE
-  },
-  "statusCode": 200
-}'
-```
-
-And optionally for InDesign (INDD) Banners Automation, please note that an Azure Storage Account is required.
-
-```plaintext
-INDESIGN_FIREFLY_SERVICES_API_CLIENT_ID=[REDACTED]
-INDESIGN_FIREFLY_SERVICES_API_CLIENT_SECRET=[REDACTED]
-INDESIGN_FIREFLY_SERVICES_API_SCOPES=openid,AdobeID,creative_sdk,indesign_services,creative_cloud
-AZURE_STORAGE_ACCOUNT_NAME=[REDACTED]
-AZURE_STORAGE_ACCOUNT_KEY=[REDACTED]
-AZURE_STORAGE_CONTAINER_NAME=[REDACTED]
-```
-
-### 5. App Configuration
-
-Update your `app.config.yaml` with the following:
-
-```yaml
-actions:
-  psd-banners-automation:
-    function: actions/psd-banners-automation/index.js
-    web: 'yes'
-    runtime: nodejs:18
-    limits:
-      memorySize: 512
-      concurrency: 10
-      timeout: 600000
-    inputs:
-      LOG_LEVEL: info
-      fireflyServicesApiClientId: $FIREFLY_SERVICES_API_CLIENT_ID
-      fireflyServicesApiClientSecret: $FIREFLY_SERVICES_API_CLIENT_SECRET
-      fireflyServicesApiScopes: $FIREFLY_SERVICES_API_SCOPES
-      aemCertificate: $AEM_CERTIFICATE
-    annotations:
-      require-adobe-auth: true
-```
-
-More actions can be configured like showned in the [app.config.yaml](https://github.com/fornacif/automation-kit/blob/main/app.config.yaml) present in the repository.
-
-## Deployment
-
-Deploy your application using the Adobe I/O CLI:
-
-```bash
-aio app deploy
-```
-
-The deployment will provide you with a web action URL that will be used in the AEM Processing Profile.
 
 ## Sample Assets
 
@@ -240,7 +127,7 @@ Remember that Smart Crop names in this configuration must match the ones used in
    - Endpoint URL: {Your deployed web action URL}
    - Services Parameters:
      1. outputFormatType as key and `image/jpeg` or `image/png` as value
-     2. Others...
+     2. certificate as key and the previously created [AEM JSON Certificate](#AEM Certificate Setup) as value
    - Set `image/vnd.adobe.photoshop` for included Mime Type
 
 ### Execute Automation
