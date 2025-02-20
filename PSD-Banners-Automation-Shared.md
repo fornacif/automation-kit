@@ -125,9 +125,9 @@ Remember that Smart Crop names in this configuration must match the ones used in
 3. Add a new Custom Processing Services with the following configuration:
    - `inputs`as Rendition Name and `json` as extension
    - Endpoint URL: 
-```plaintext
-      https://85792-608blackantelope-stage.adobeioruntime.net/api/v1/web/demo-kit.processing-profiles/psd-banners-automation-shared
-```
+      ```plaintext
+            https://85792-608blackantelope-stage.adobeioruntime.net/api/v1/web/demo-kit.processing-profiles/psd-banners-automation-shared
+      ```
    - Services Parameters:
      1. `outputFormatType` as key and `image/jpeg` or `image/png` as value
      2. `certificate` as key and the previously created [AEM JSON Certificate](#aem-certificate-setup) as value
