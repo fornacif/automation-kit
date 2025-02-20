@@ -127,7 +127,7 @@ Remember that Smart Crop names in this configuration must match the ones used in
    - Endpoint URL: {Your deployed web action URL}
    - Services Parameters:
      1. outputFormatType as key and `image/jpeg` or `image/png` as value
-     2. certificate as key and the previously created [AEM JSON Certificate](#AEM Certificate Setup) as value
+     2. certificate as key and the previously created [AEM JSON Certificate](#aem-certificate-setup) as value
    - Set `image/vnd.adobe.photoshop` for included Mime Type
 
 ### Execute Automation
