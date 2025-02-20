@@ -18,8 +18,8 @@ The automation will generate a new PSD template for each variation and produce c
 
 ## Automation Types
 
-1. [PSD Banners Automation](https://github.com/fornacif/automation-kit/blob/main/PSD-Banners-Automation.md) (Self hosted)
-2. [PSD Banners Automation](https://github.com/fornacif/automation-kit/blob/main/PSD-Banners-Automation-Shared.md) (Shared service)
+1. [PSD Banners Automation](https://github.com/fornacif/automation-kit/blob/main/psd-banners-automation) (Self hosted)
+2. [PSD Banners Automation](https://github.com/fornacif/automation-kit/blob/main/psd-banners-automation-shared) (Shared service)
 3. TODO: INDD Banners Automation (Self hosted)
 4. TODO: INDD Banners Automation (Shared service)
 5. TODO: Product Crop Automation (Self hosted)
