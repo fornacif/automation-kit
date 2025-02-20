@@ -126,7 +126,7 @@ Remember that Smart Crop names in this configuration must match the ones used in
    - `inputs`as Rendition Name and `json` as extension
    - Endpoint URL: 
       ```plaintext
-            https://85792-608blackantelope-stage.adobeioruntime.net/api/v1/web/demo-kit.processing-profiles/psd-banners-automation-shared
+https://85792-608blackantelope-stage.adobeioruntime.net/api/v1/web/demo-kit.processing-profiles/psd-banners-automation-shared
       ```
    - Services Parameters:
      1. `outputFormatType` as key and `image/jpeg` or `image/png` as value
