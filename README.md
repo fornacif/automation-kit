@@ -24,5 +24,3 @@ The automation will generate a new PSD template for each variation and produce c
 4. TODO: INDD Banners Automation (Shared service)
 5. TODO: Product Crop Automation (Self hosted)
 6. TODO: Product Crop Automation (Shared service)
-7. TODO: Photoshop Action Automation (Self hosted)
-8. TODO: Photoshop Action Automation (Shared service)
