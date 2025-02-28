@@ -380,20 +380,37 @@ class AutomationService {
             for (const smartObject of smartObjects) {
                 if (smartObject.imageName !== imageBasename) continue;
 
-                const layer = {
+                const editLayer = {
                     id: smartObject.layerId,
                     edit: {}
                 };
 
                 if (smartObject.smartCropName) {
                     const imageUrl = await this.resolveDynamicMediaUrl(imagePath, smartObject.smartCropName);
-                    layer.input = this.createPhotoshopInput(imageUrl);
+                    editLayer.input = this.createPhotoshopInput(imageUrl);
                 } else {
                     const imageUrl = await this.getAssetPresignedUrl(imagePath);
-                    layer.input = this.createPhotoshopInput(imageUrl);
+                    editLayer.input = this.createPhotoshopInput(imageUrl);
                 }
 
-                options.layers.push(layer);
+                options.layers.push(editLayer);
+
+                const newLayer = {
+                    name: smartObject.imageName,
+                    type: 'smartObject',
+                    visible: false,
+                    add: {
+                        insertAbove: {
+                            name: smartObject.layerName
+                        }
+                    }
+                };
+
+                const imageUrl = await this.getAssetPresignedUrl(imagePath);
+                newLayer.input = this.createPhotoshopInput(imageUrl);
+
+                options.layers.push(newLayer);
+
             }
         }
     }
@@ -456,7 +473,7 @@ class AutomationService {
         await this.populateSmartObjectsOptions(photoshopOptions, imagePaths, smartObjects);
 
         this.renditionContent += `\n ---- photoshopOptions for variation ${variationName} and language ${languageName} ----\n ${JSON.stringify(photoshopOptions, null, 2)}`;
- 
+
         // First phase: Modify document with smart objects
         await this.photoshopClient.modifyDocument({
             inputs: [this.createPhotoshopInput(inputUrl)],
