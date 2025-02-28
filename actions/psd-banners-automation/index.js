@@ -379,23 +379,24 @@ class AutomationService {
             
             for (const smartObject of smartObjects) {
                 if (smartObject.imageName !== imageBasename) continue;
-
-                const editLayer = {
+                
+                // Get the base asset URL just once
+                const baseAssetUrl = await this.getAssetPresignedUrl(imagePath);
+                
+                // Determine which URL to use for the edit layer
+                const editLayerUrl = smartObject.smartCropName
+                    ? await this.resolveDynamicMediaUrl(imagePath, smartObject.smartCropName)
+                    : baseAssetUrl;
+                
+                // Create edit layer with appropriate URL
+                options.layers.push({
                     id: smartObject.layerId,
-                    edit: {}
-                };
-
-                if (smartObject.smartCropName) {
-                    const imageUrl = await this.resolveDynamicMediaUrl(imagePath, smartObject.smartCropName);
-                    editLayer.input = this.createPhotoshopInput(imageUrl);
-                } else {
-                    const imageUrl = await this.getAssetPresignedUrl(imagePath);
-                    editLayer.input = this.createPhotoshopInput(imageUrl);
-                }
-
-                options.layers.push(editLayer);
-
-                const newLayer = {
+                    edit: {},
+                    input: this.createPhotoshopInput(editLayerUrl)
+                });
+                
+                // Create new layer - always using the base asset URL
+                options.layers.push({
                     name: smartObject.imageName,
                     type: 'smartObject',
                     visible: false,
@@ -403,14 +404,9 @@ class AutomationService {
                         insertAbove: {
                             name: smartObject.layerName
                         }
-                    }
-                };
-
-                const imageUrl = await this.getAssetPresignedUrl(imagePath);
-                newLayer.input = this.createPhotoshopInput(imageUrl);
-
-                options.layers.push(newLayer);
-
+                    },
+                    input: this.createPhotoshopInput(baseAssetUrl)
+                });
             }
         }
     }
