@@ -135,13 +135,12 @@ Remember that Smart Crop names in this configuration must match the ones used in
 1. Create a new folder
 2. Upload your PSD template
 3. Create two subfolders: `INPUTS` and `OUTPUTS`
-4. Apply the Image Processing Profile you created previously
-5. (Optional) Enable Dynamic Media on the `INPUTS` folder.
-6. (Optional) If Dynamic Media with Open API is enabled, simply approve the assets once they are uploaded
-7. Upload your assets (images and fonts) to the `INPUTS` folder
-8. Trigger mannually the "PSD Banners Automation" processing profile to the PSD file (Reprocess Assets)
-9. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
-10. Check that new banners have been created inside the `OUTPUTS` folder
+4. (Optional) Enable Dynamic Media on the `INPUTS` folder.
+5. (Optional) If Dynamic Media with Open API is enabled, simply approve the assets once they are uploaded
+6. Upload your assets (images and fonts) to the `INPUTS` folder
+7. Trigger mannually the "PSD Banners Automation" processing profile to the PSD file (Reprocess Assets)
+8. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+9. Check that new banners have been created inside the `OUTPUTS` folder
 
 ## Troubleshooting
 
