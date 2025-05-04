@@ -209,11 +209,6 @@ class AutomationService {
         return entities;
     }
 
-    async waitBeforeContinue(time) {
-        const delay = ms => new Promise(res => setTimeout(res, ms));
-        await delay(time);
-    }
-
     async fetchResultStatus(url) {
         const options = {
             method: 'GET',
@@ -307,6 +302,7 @@ class AutomationService {
         if (response.ok) {
             const result = await response.json();
 
+            // Block until file has been uploaded
             await this.uploadFileToAEM(outputPresignedUrl, outputFolderPath, 'merged.indd');
             
             const resultStatus = await this.fetchResultStatus(result.statusUrl);
