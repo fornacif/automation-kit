@@ -10,7 +10,7 @@ application:
             web: 'yes'
             runtime: nodejs:18
             limits:
-              memorySize: 1048
+              memorySize: 1024
               concurrency: 10
               timeout: 600000
             inputs:
