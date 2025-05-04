@@ -308,7 +308,7 @@ class AutomationService {
         });     
     }
 
-    createCsvFromVariations(data) {
+    createRowsFromVariations(data) {
         const variations = data.variations;
         const rows = [];
         const allLanguageKeys = new Set();
@@ -375,6 +375,10 @@ class AutomationService {
             });
         });
     
+        return { headers, rows };
+    }
+    
+    generateCsvFromRows(headers, rows) {
         // Convert to CSV format with all values quoted
         const csvRows = [];
         const quotedHeaders = headers.map(header => `"${header}"`);
@@ -518,7 +522,7 @@ class AutomationService {
         }
     }
 
-    async createRendition(inputPresignedUrl, recordIndexBounds, outputFolderPath) {
+    async createRendition(inputPresignedUrl, recordIndexBounds, outputFolderPath, rows) {
         const data = {
             assets: [
                 {
@@ -539,18 +543,18 @@ class AutomationService {
             },
             outputs: []
         };
+
+        const formatMap = {
+            'image/png': 'png',
+            'image/jpeg': 'jpg',
+            'application/pdf': 'pdf'
+        };
+        
+        let fileExtension = formatMap[this.outputFormatType];
       
         const outputs = [];
       
         for (let i = recordIndexBounds[0]; i <= recordIndexBounds[1]; i++) {
-            const formatMap = {
-                'image/png': 'png',
-                'image/jpeg': 'jpg',
-                'application/pdf': 'pdf'
-            };
-            
-            let fileExtension = formatMap[this.outputFormatType];
-            
             if (!fileExtension) {
                 throw new Error(`Unsupported output format: ${this.outputFormatType}`);
             }
@@ -579,9 +583,10 @@ class AutomationService {
         const response = await fetch(`https://indesign.adobe.io/v3/create-rendition`, options);
       
         if (response.ok) { 
-            const promises = [];    
-            for (const output of outputs) {
-                const promise = this.uploadFileToAEM(output.outputPresignedUrl, outputFolderPath, output.filename);
+            const promises = [];   
+            for (let i = 0; i < outputs.length; i++) {
+                const filename = `${rows[i].variation}-${rows[i].lang}.${fileExtension}`;
+                const promise = this.uploadFileToAEM(outputs[i].outputPresignedUrl, outputFolderPath, filename);
                 promises.push(promise);
             }
             await Promise.all(promises);
@@ -590,30 +595,32 @@ class AutomationService {
         }
     }
 
-    async generateDatasourcePresignedUrlFromInputs() { 
-        const datasourcePresignedUrl = await this.generatePresignURL();
+    async generatePresignedUrlFromCsv(dataCsv) { 
+        const presignedUrl = await this.generatePresignURL();
 
-        const inputs = await this.retrieveInputs();
-        this.validateInputs(inputs);
-
-        const csvData = this.createCsvFromVariations(inputs);
         const tempPath = uuid4();
-        fs.writeFileSync(tempPath, csvData, 'utf16le');
+        fs.writeFileSync(tempPath, dataCsv, 'utf16le');
 
-        await uploadFileConcurrently(tempPath, datasourcePresignedUrl);
+        await uploadFileConcurrently(tempPath, presignedUrl);
 
         this.files.delete(tempPath);
 
-        return datasourcePresignedUrl;
+        return presignedUrl;
     }
 
     async executeAutomation() {
         const outputFolderPath = `${DAM_ROOT_PATH}${this.automationRelativePath}/outputs`;
         const tempPresignedUrl = await this.generatePresignURL();
-        const datasourcePresignedUrl = await this.generateDatasourcePresignedUrlFromInputs();
+
+        const inputs = await this.retrieveInputs();
+        this.validateInputs(inputs);
+
+        const { headers, rows } = this.createRowsFromVariations(inputs);
+        const dataCsv = this.generateCsvFromRows(headers, rows);
+        const datasourcePresignedUrl = await this.generatePresignedUrlFromCsv(dataCsv);
 
         const recordIndexBounds = await this.mergeData(tempPresignedUrl, datasourcePresignedUrl, outputFolderPath);
-        await this.createRendition(tempPresignedUrl, recordIndexBounds, outputFolderPath);
+        await this.createRendition(tempPresignedUrl, recordIndexBounds, outputFolderPath, rows);
     }
 
     async createAEMRendition(path) {
