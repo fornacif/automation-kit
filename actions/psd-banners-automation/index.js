@@ -10,7 +10,6 @@ const { downloadFileConcurrently, uploadFileConcurrently } = require('@adobe/htt
 const { v4: uuid4 } = require('uuid');
 var fs = require("fs");
 const DirectBinary = require('@adobe/aem-upload');
-const { text } = require('stream/consumers');
 
 // Constants
 const DAM_ROOT_PATH = '/content/dam/';
@@ -156,25 +155,29 @@ class AutomationService {
                 return obj;
             }, {});
         });
-
+    
         // Create grouped result
         const result = {};
-
+    
+        // Identify which columns are data columns (not variation or lang)
+        const dataColumns = headers.filter(header => 
+            header !== 'variation' && header !== 'lang'
+        );
+    
         data.forEach(row => {
-            // Split variations and languages
-            const variations = row.variation.split('|');
-            const languages = row.lang.split('|');
+            const variation = row.variation;
+            const lang = row.lang;
             
-            variations.forEach(variation => {
-                result[variation] = result[variation] || {};
-                
-                languages.forEach(lang => {
-                    result[variation][lang] = result[variation][lang] || {};
-                    result[variation][lang][row.key] = row.value;
-                });
+            // Initialize structure if needed
+            result[variation] = result[variation] || {};
+            result[variation][lang] = result[variation][lang] || {};
+            
+            // Dynamically assign all data columns
+            dataColumns.forEach(column => {
+                result[variation][lang][column] = row[column];
             });
         });
-
+    
         return result;
     }
 
@@ -540,8 +543,8 @@ class AutomationService {
     }
 
     async createAEMRendition(path) {
-        await this.files.write('inputs.json', this.renditionContent)
-        await this.files.copy('inputs.json', path, { localDest: true });
+        await this.files.write('rendition', this.renditionContent)
+        await this.files.copy('rendition', path, { localDest: true });
     }
 
     async createAEMTask(name, description) {
@@ -564,6 +567,7 @@ exports.main = worker(async (source, rendition, params) => {
 
     try {
         service = await AutomationService.create(rendition, params);
+
         process.on('unhandledRejection', (error) => {
             console.error(error);
         });

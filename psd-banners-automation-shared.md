@@ -63,40 +63,21 @@ The layer names in your PSD template must follow these rules:
 The `texts.csv` file contains the text content for different variants and languages. Each value must be enclosed in double quotes to ensure proper CSV formatting. The structure is:
 
 ```csv
-variation,lang,key,value
-climbing|cycling|skiing|surfing,en,website,www.wknd.com
-climbing|cycling|skiing|surfing,fr,website,www.wknd.fr
-climbing,en|fr,title,"Climbing"
-cycling,en,title,"Cycling"
-skiing,en,title,"Skiing"
-surfing,en,title,"Surfing"
-climbing,fr,title,"Escalade"
-cycling,fr,title,"Cyclisme"
-skiing,fr,title,"Ski"
-surfing,fr,title,"Surf"
+variation,lang,title,text,website
+climbing,en,Climbing,"Feel the raw adventure and excitement of our guided rock climbing experience.",www.wknd.com
+climbing,fr,Escalade,"Vivez l'aventure pure et l'excitation de notre expérience d'escalade guidée.",www.wknd.fr
+cycling,en,Cycling,"Join us as we explore the rugged, stunningly gorgeous landscape of southern Utah.",www.wknd.com
+cycling,fr,Cyclisme,"Rejoignez-nous pour explorer les paysages accidentés et spectaculaires du sud de l'Utah.",www.wknd.fr
+skiing,en,Skiing,"If you’re a slopes enthusiast, you know that one run in the backcountry is worth ten in the front country.",www.wknd.com
+skiing,fr,Ski,"En tant que passionné de glisse, vous savez qu'une descente en hors-piste vaut dix descentes sur piste.",www.wknd.fr
+surfing,en,Surfing,"Experience local surf guides will take care of all the logistics and find the best spots for you.",www.wknd.com
+surfing,fr,Surf,"Nos guides de surf locaux s'occupent de toute la logistique et trouvent les meilleurs spots pour vous.",www.wknd.fr
 ```
 
 Where:
-- `variation`: Identifies the banner variation(s)
-- `lang`: Language code(s)
-- `key`: Must match the text layer name in the PSD
-- `value`: The actual text content to be inserted
-
-To optimize your CSV file, you can use pipe separators (`|`) in both the `variation` and `lang` columns to normalize the content:
-
-1. **Multiple Variations**: When the same text applies to multiple variations, list them with pipes:
-   ```csv
-   climbing|cycling|skiing|surfing,en,website,www.wknd.com
-   ```
-   This single line will apply to all four variations.
-
-2. **Multiple Languages**: When the same text applies to multiple languages, list them with pipes:
-   ```csv
-   climbing,en|fr,title,Climbing
-   ```
-   This will use the same value for both English and French.
-
-The automation will automatically denormalize these entries when processing the PSD template. Your PSD text layer names must exactly match the `key` values in the CSV file.
+- `variation`: Identifies the banner variation
+- `lang`: Language code
+- `[any]`: Must match any text layer name in the PSD
 
 ## AEM Configuration
 

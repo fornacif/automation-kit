@@ -1,19 +1,9 @@
-variation,lang,key,value
-climbing|cycling|skiing|surfing,en,website,www.wknd.com
-climbing|cycling|skiing|surfing,fr,website,www.wknd.fr
-climbing,en|fr,title,"Climbing"
-cycling,en,title,"Cycling"
-skiing,en,title,"Skiing"
-surfing,en,title,"Surfing"
-climbing,fr,title,"Escalade"
-cycling,fr,title,"Cyclisme"
-skiing,fr,title,"Ski"
-surfing,fr,title,"Surf"
-climbing,en,text,"Feel the raw adventure and excitement of our guided rock climbing experience."
-cycling,en,text,"Join us as we explore the rugged, stunningly gorgeous landscape of southern Utah."
-skiing,en,text,"If you’re a slopes enthusiast, you know that one run in the backcountry is worth ten in the front country."
-surfing,en,text,"Experience local surf guides will take care of all the logistics and find the best spots for you."
-climbing,fr,text,"Vivez l'aventure pure et l'excitation de notre expérience d'escalade guidée."
-cycling,fr,text,"Rejoignez-nous pour explorer les paysages accidentés et spectaculaires du sud de l'Utah."
-skiing,fr,text,"En tant que passionné de glisse, vous savez qu'une descente en hors-piste vaut dix descentes sur piste."
-surfing,fr,text,"Nos guides de surf locaux s'occupent de toute la logistique et trouvent les meilleurs spots pour vous."
+variation,lang,title,text,website
+climbing,en,Climbing,"Feel the raw adventure and excitement of our guided rock climbing experience.",www.wknd.com
+climbing,fr,Escalade,"Vivez l'aventure pure et l'excitation de notre expérience d'escalade guidée.",www.wknd.fr
+cycling,en,Cycling,"Join us as we explore the rugged, stunningly gorgeous landscape of southern Utah.",www.wknd.com
+cycling,fr,Cyclisme,"Rejoignez-nous pour explorer les paysages accidentés et spectaculaires du sud de l'Utah.",www.wknd.fr
+skiing,en,Skiing,"If you’re a slopes enthusiast, you know that one run in the backcountry is worth ten in the front country.",www.wknd.com
+skiing,fr,Ski,"En tant que passionné de glisse, vous savez qu'une descente en hors-piste vaut dix descentes sur piste.",www.wknd.fr
+surfing,en,Surfing,"Experience local surf guides will take care of all the logistics and find the best spots for you.",www.wknd.com
+surfing,fr,Surf,"Nos guides de surf locaux s'occupent de toute la logistique et trouvent les meilleurs spots pour vous.",www.wknd.fr
