@@ -359,18 +359,9 @@ class AutomationService {
             const outputPresignedUrl = await this.generatePresignURL();
             outputs.push({outputPresignedUrl: outputPresignedUrl, filename: `merged-${i}.${fileExtension}`});
       
-            let fileName = null;
-            if ('pdf' == fileExtension) {
-                const number = i < 10 ? `0${i}` : i;
-                fileName = `merged/merged_${number}.${fileExtension}`;
-            }
-            else {
-                fileName = `merged.${fileExtension}`;
-                if (i > 1) {
-                    fileName = `merged${i}.${fileExtension}`;
-                }
-            }
-            
+            let fileName = fileExtension === 'pdf' 
+                ? `merged/merged_${i.toString().padStart(2, '0')}.${fileExtension}`
+                : `merged${i > 1 ? i : ''}.${fileExtension}`;
       
             data.outputs.push(
                 {
