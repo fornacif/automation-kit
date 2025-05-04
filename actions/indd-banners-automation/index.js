@@ -598,7 +598,7 @@ class AutomationService {
 
         const csvData = this.createCsvFromVariations(inputs);
         const tempPath = uuid4();
-        fs.writeFileSync(tempPath, csvData);
+        fs.writeFileSync(tempPath, csvData, 'utf16le');
 
         await uploadFileConcurrently(tempPath, datasourcePresignedUrl);
 
