@@ -88,52 +88,49 @@ class AutomationService {
         });
     }
 
-    async uploadFileToAEM(presignedUrl, outputFolderPath, fileName) {
-        const generatedId = uuid4();
-        const filePath = `${generatedId}/temp`;
-
+    async uploadFileToAEM(source, targetFolderPath, fileName) {
+        let filePath = source;
+        let tempId = null;
+    
         try {
-            await downloadFileConcurrently(
-                presignedUrl,
-                filePath,
-                {
+            // If source is a URL, download it first
+            if (source.startsWith('http')) {
+                tempId = uuid4();
+                filePath = `${tempId}/temp`;
+    
+                await downloadFileConcurrently(source, filePath, {
                     mkdirs: true,
-                    retryEnabled:true,
-                    retryAllErrors:true
-                }
-            );
-
-            var stats = fs.statSync(filePath)
-            var fileSizeInBytes = stats.size;
-
-            const uploadFiles = [
-                {
-                    fileName: fileName,
-                    fileSize: fileSizeInBytes,
-                    filePath: filePath
-                }
-            ];
-
-            const targetUrl = `${this.aemAuthorHost}${outputFolderPath}`;
-
+                    retryEnabled: true,
+                    retryAllErrors: true
+                });
+            }
+    
+            const fileSize = fs.statSync(filePath).size;
+    
             const upload = new DirectBinary.DirectBinaryUpload();
             const options = new DirectBinary.DirectBinaryUploadOptions()
-                .withUrl(targetUrl)
+                .withUrl(`${this.aemAuthorHost}${targetFolderPath}`)
                 .withHttpOptions({
                     headers: {
                         Authorization: `Bearer ${this.aemAccessToken}`
                     }
                 })
-                .withUploadFiles(uploadFiles);
-
+                .withUploadFiles([{
+                    fileName,
+                    fileSize,
+                    filePath
+                }]);
+    
             await upload.uploadFiles(options);
         } finally {
-            await this.files.delete(`${generatedId}/`);
+            if (tempId) {
+                await this.files.delete(`${tempId}/`);
+            }
         }
     }
 
-    async getAssetPresignedUrl(assetPath, directBinaryAccess = true) {
-        if (directBinaryAccess && this.directBinaryAccess === 'true') {
+    async getAssetPresignedUrl(assetPath) {
+        if (this.directBinaryAccess === 'true') {
             return await this.executeAEMRequest('GET', 'application/json', 'text', '/bin/dbauri', { assetPath });
         }
 
@@ -150,11 +147,7 @@ class AutomationService {
                 }
             );
 
-            const presignedUrl = await this.files.generatePresignURL(generatedId, {
-                expiryInSeconds: DEFAULT_EXPIRY_SECONDS,
-                permissions: DEFAULT_FILE_PERMISSIONS
-            });
-
+            const presignedUrl = await this.generatePresignURL()
             await uploadFileConcurrently(filePath, presignedUrl);
             return presignedUrl;
         } finally {
@@ -209,6 +202,197 @@ class AutomationService {
         return entities;
     }
 
+    async retrieveTextsByLanguage(filePath) {
+        const csvContent = await this.executeAEMRequest('GET', 'application/json', 'text', filePath);
+        
+        const lines = csvContent.trim().split('\n').filter(line => line);
+        const headers = lines[0].split(',').map(header => header.trim());
+        
+        const data = lines.slice(1).map(line => {
+            const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)
+                .map(val => val.replace(/^"|"$/g, '').trim());
+                
+            return headers.reduce((obj, header, index) => {
+                obj[header] = values[index];
+                return obj;
+            }, {});
+        });
+
+        // Create grouped result
+        const result = {};
+
+        data.forEach(row => {
+            // Split variations and languages
+            const variations = row.variation.split('|');
+            const languages = row.lang.split('|');
+            
+            variations.forEach(variation => {
+                result[variation] = result[variation] || {};
+                
+                languages.forEach(lang => {
+                    result[variation][lang] = result[variation][lang] || {};
+                    result[variation][lang][row.key] = row.value;
+                });
+            });
+        });
+
+        return result;
+    }
+
+    async retrieveInputs() { 
+        const inputsRelativePath = `${this.automationRelativePath}/inputs`;
+        const response = await this.executeAEMRequest('GET', 'application/json', 'json', `/api/assets/${inputsRelativePath}.json`);
+    
+        const result = {
+            fontPaths: [],
+            variations: {}
+        };
+    
+        // Return early if no entities
+        if (!response.entities?.length) {
+            return result;
+        }
+
+        const assets = response.entities.filter(entity => entity.class == 'assets/asset');
+            
+        for (const asset of assets) {
+            const filename = asset.properties.name;
+            const fileFormat = asset.properties.metadata['dc:format'];
+            const filePath = `${DAM_ROOT_PATH}${inputsRelativePath}/${filename}`;
+
+            if (/^font\/(otf|ttf)$/.test(fileFormat)) {
+                result.fontPaths.push(filePath);  
+            }
+
+            if ('text/csv' == fileFormat) {
+                const texts = await this.retrieveTextsByLanguage(filePath);
+                for (const [segment, languages] of Object.entries(texts)) {
+                    result.variations[segment] ??= {};
+                    result.variations[segment].languages = languages;
+                }
+            }
+
+            const filenameParts = filename.split('--');
+            if (filenameParts.length == 2) {
+                const segment = filenameParts[0];
+
+                result.variations[segment] ??= {};
+                result.variations[segment].imagePaths ??= [];
+
+                if (/^image\/(png|jpeg|jpg)$/.test(fileFormat)) {
+                    result.variations[segment].imagePaths.push(filePath);  
+                }
+      
+            }   
+        };
+    
+        console.info(`retrieveInputs [${inputsRelativePath}] ${JSON.stringify(result)}`);
+        this.renditionContent = `---- Retrieved Inputs ----\n ${JSON.stringify(result, null, 2)}`;
+        
+        return result;   
+    }
+
+    validateInputs(inputs) {
+        const variations = inputs.variations;
+     
+        Object.entries(variations).forEach(([variationName, variation]) => {
+            // Check if imagePaths exists and has at least one element
+            if (!variation.imagePaths || !Array.isArray(variation.imagePaths) || variation.imagePaths.length === 0) {
+                throw new Error(`Variation "${variationName}" must have at least one image`);
+            }
+     
+            // Check if languages exists and has at least one language object
+            if (!variation.languages || typeof variation.languages !== 'object' || Object.keys(variation.languages).length === 0) {
+                throw new Error(`Variation "${variationName}" must have at least one language`);
+            }
+        });     
+    }
+
+    createCsvFromVariations(data) {
+        const variations = data.variations;
+        const rows = [];
+        const allLanguageKeys = new Set();
+        const imageColumnNames = new Map(); // Map to store unique column names
+        
+        // First pass: collect all unique language keys and determine image column names
+        Object.entries(variations).forEach(([variationName, variationData]) => {
+            // Collect language keys
+            Object.values(variationData.languages).forEach(langData => {
+                Object.keys(langData).forEach(key => allLanguageKeys.add(key));
+            });
+            
+            // Process image paths to determine column names
+            variationData.imagePaths.forEach((imagePath, index) => {
+                const filename = imagePath.split('/').pop(); // Get just the filename
+                // Extract the part after "--" and before the extension
+                const match = filename.match(/--([^.]+)\./);
+                if (match) {
+                    const columnName = match[1];
+                    imageColumnNames.set(columnName, true);
+                }
+            });
+        });
+    
+        // Create headers
+        const headers = [
+            'variation',
+            'lang',
+            ...Array.from(allLanguageKeys).sort(),
+            ...Array.from(imageColumnNames.keys()).sort()
+        ];
+    
+        // Create rows
+        Object.entries(variations).forEach(([variationName, variationData]) => {
+            Object.entries(variationData.languages).forEach(([lang, langData]) => {
+                const row = {
+                    variation: variationName,
+                    lang: lang
+                };
+    
+                // Add language keys
+                allLanguageKeys.forEach(key => {
+                    row[key] = langData[key] || '';
+                });
+    
+                // Add image filenames with appropriate column names
+                variationData.imagePaths.forEach(imagePath => {
+                    const filename = imagePath.split('/').pop();
+                    const match = filename.match(/--([^.]+)\./);
+                    if (match) {
+                        const columnName = match[1];
+                        row[columnName] = filename;
+                    }
+                });
+    
+                // Fill in any missing image columns with empty strings
+                imageColumnNames.forEach((_, columnName) => {
+                    if (!row[columnName]) {
+                        row[columnName] = '';
+                    }
+                });
+    
+                rows.push(row);
+            });
+        });
+    
+        // Convert to CSV format with all values quoted
+        const csvRows = [];
+        const quotedHeaders = headers.map(header => `"${header}"`);
+        csvRows.push(quotedHeaders.join(','));
+        
+        rows.forEach(row => {
+            const values = headers.map(header => {
+                const value = row[header] || '';
+                // Escape any existing quotes by doubling them
+                const escapedValue = value.replace(/"/g, '""');
+                return `"${escapedValue}"`;
+            });
+            csvRows.push(values.join(','));
+        });
+    
+        return csvRows.join('\n');
+    }
+    
     buildRequestOptions(data) {
         const options = {
             method: 'GET',
@@ -239,9 +423,27 @@ class AutomationService {
         }
     }
 
-    async mergeData(outputPresignedUrl, dataSourcePath, outputFolderPath) {
+    async getPresignedUrlWithRetry(path, maxRetries = 10, delayMs = 500) {
+        let presignedUrl = '';
+        let attempts = 0;
+      
+        while (!presignedUrl && attempts < maxRetries) {
+            attempts++;
+            presignedUrl = await this.getAssetPresignedUrl(path);       
+            if (presignedUrl == '') {
+                await new Promise(resolve => setTimeout(resolve, delayMs));
+            }
+        }
+      
+        if (presignedUrl == '') {
+          throw new Error(`Failed to get presigned URL after ${maxRetries} attempts`);
+        }
+      
+        return presignedUrl;
+    }
+
+    async mergeData(outputPresignedUrl, datasourcePresignedUrl, outputFolderPath) {
         const templatePresignedUrl = await this.getAssetPresignedUrl(this.assetPath);
-        const dataSourcePresignedUrl = await this.getAssetPresignedUrl(dataSourcePath, false);
 
         const data = {
             assets: [
@@ -253,7 +455,7 @@ class AutomationService {
                 },
                 {
                     source: {
-                        url: dataSourcePresignedUrl
+                        url: datasourcePresignedUrl
                     },
                     destination: 'datasource.csv'
                 }
@@ -296,7 +498,7 @@ class AutomationService {
       
         const options = this.buildRequestOptions(data);
 
-        this.renditionContent = '---- Retrieved Inputs for Merge Data ----\n' + JSON.stringify(data, null, 2);
+        this.renditionContent += '---- Retrieved Inputs for Merge Data ----\n' + JSON.stringify(data, null, 2);
 
         const response = await fetch(`https://indesign.adobe.io/v3/merge-data`, options);
 
@@ -388,17 +590,34 @@ class AutomationService {
         }
     }
 
+    async generateDatasourcePresignedUrlFromInputs() { 
+        const datasourcePresignedUrl = await this.generatePresignURL();
+
+        const inputs = await this.retrieveInputs();
+        this.validateInputs(inputs);
+
+        const csvData = this.createCsvFromVariations(inputs);
+        const tempPath = uuid4();
+        fs.writeFileSync(tempPath, csvData);
+
+        await uploadFileConcurrently(tempPath, datasourcePresignedUrl);
+
+        this.files.delete(tempPath);
+
+        return datasourcePresignedUrl;
+    }
+
     async executeAutomation() {
         const outputFolderPath = `${DAM_ROOT_PATH}${this.automationRelativePath}/outputs`;
-        const dataSourcePath = `${DAM_ROOT_PATH}${this.automationRelativePath}/data.csv`;
         const tempPresignedUrl = await this.generatePresignURL();
+        const datasourcePresignedUrl = await this.generateDatasourcePresignedUrlFromInputs();
 
-        const recordIndexBounds = await this.mergeData(tempPresignedUrl, dataSourcePath, outputFolderPath);
+        const recordIndexBounds = await this.mergeData(tempPresignedUrl, datasourcePresignedUrl, outputFolderPath);
         await this.createRendition(tempPresignedUrl, recordIndexBounds, outputFolderPath);
     }
 
     async createAEMRendition(path) {
-        await this.files.write('inputs.json', this.renditionContent)
+        await this.files.write('inputs.json', this.renditionContent);
         await this.files.copy('inputs.json', path, { localDest: true });
     }
 
