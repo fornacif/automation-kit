@@ -209,7 +209,7 @@ class AutomationService {
         return entities;
     }
 
-    async fetchResultStatus(url) {
+    buildRequestOptions(data) {
         const options = {
             method: 'GET',
             headers: {
@@ -219,7 +219,17 @@ class AutomationService {
                 'x-enable-beta': 'true'
             }
         };
-      
+    
+        if (data) {
+            options.method = 'POST',
+            options.body = JSON.stringify(data);
+        }
+    
+        return options;
+    }
+
+    async fetchResultStatus(url) {
+        const options = this.buildRequestOptions();
         const response = await fetch(url, options)
         
         if (response.ok) {     
@@ -227,7 +237,7 @@ class AutomationService {
         } else {
             throw new Error(`Error fetching result status: ${response.statusText}`);
         }
-      }
+    }
 
     async mergeData(outputPresignedUrl, dataSourcePath, outputFolderPath) {
         const templatePresignedUrl = await this.getAssetPresignedUrl(this.assetPath);
@@ -284,16 +294,7 @@ class AutomationService {
         }
       
       
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.inDesignApiAccessToken}`,
-                'x-api-key': this.inDesignApiKey,
-                'x-enable-beta': 'true'
-            },
-            body: JSON.stringify(data)
-        };
+        const options = this.buildRequestOptions(data);
 
         this.renditionContent = '---- Retrieved Inputs for Merge Data ----\n' + JSON.stringify(data, null, 2);
 
@@ -340,15 +341,15 @@ class AutomationService {
         const outputs = [];
       
         for (let i = recordIndexBounds[0]; i <= recordIndexBounds[1]; i++) {
-            let fileExtension;
-      
-            if ('image/png' == this.outputFormatType) {
-                fileExtension = 'png';
-            } else if ('image/jpeg' == this.outputFormatType) {
-                fileExtension = 'jpg';
-            } else if ('application/pdf' == this.outputFormatType) {
-                fileExtension = 'pdf';
-            } else { 
+            const formatMap = {
+                'image/png': 'png',
+                'image/jpeg': 'jpg',
+                'application/pdf': 'pdf'
+            };
+            
+            let fileExtension = formatMap[this.outputFormatType];
+            
+            if (!fileExtension) {
                 throw new Error(`Unsupported output format: ${this.outputFormatType}`);
             }
       
@@ -369,16 +370,7 @@ class AutomationService {
             );
         }
       
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.inDesignApiAccessToken}`,
-                'x-api-key': this.inDesignApiKey,
-                'x-enable-beta': 'true'
-            },
-            body: JSON.stringify(data)
-        };
+        const options = this.buildRequestOptions(data);
 
         this.renditionContent += '---- Retrieved Inputs for Create Rendition ----\n' + JSON.stringify(data, null, 2);
       
