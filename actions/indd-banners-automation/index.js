@@ -208,7 +208,7 @@ class AutomationService {
     
         const result = {
             fontPaths: [],
-            variations: {}
+            imagePaths: []
         };
     
         // Return early if no entities
@@ -227,18 +227,9 @@ class AutomationService {
                 result.fontPaths.push(filePath);  
             }
 
-            const filenameParts = filename.split('--');
-            if (filenameParts.length == 2) {
-                const segment = filenameParts[0];
-
-                result.variations[segment] ??= {};
-                result.variations[segment].imagePaths ??= [];
-
-                if (/^image\/(png|jpeg|jpg)$/.test(fileFormat)) {
-                    result.variations[segment].imagePaths.push(filePath);  
-                }
-      
-            }   
+            if (/^image\/(png|jpeg|jpg)$/.test(fileFormat)) {
+                result.imagePaths.push(filePath);  
+            }
         };
     
         console.info(`retrieveInputs [${inputsRelativePath}] ${JSON.stringify(result)}`);
@@ -361,21 +352,18 @@ class AutomationService {
             ]
         };
 
-        const assetPaths = Object.values(inputs.variations).flatMap(variation => variation.imagePaths);
-     
-        for (const assetPath of assetPaths) {
-            const assetBasename = path.parse(assetPath).base;
-            const assetSourcePresignedUrl = await this.getAssetPresignedUrl(assetPath);
+        for (const imagePath of inputs.imagePaths) {
+            const imageBasename = path.parse(imagePath).base;
+            const imageSourcePresignedUrl = await this.getAssetPresignedUrl(imagePath);
             data.assets.push(
                 {
                     source: {
-                        url: assetSourcePresignedUrl
+                        url: imageSourcePresignedUrl
                     },
-                    destination: assetBasename
+                    destination: imageBasename
                 }
             );
         }
-      
       
         const options = this.buildRequestOptions(data);
 
