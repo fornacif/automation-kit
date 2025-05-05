@@ -217,25 +217,29 @@ class AutomationService {
                 return obj;
             }, {});
         });
-
+    
         // Create grouped result
         const result = {};
-
+    
+        // Identify which columns are data columns (not variation or lang)
+        const dataColumns = headers.filter(header => 
+            header !== 'variation' && header !== 'lang'
+        );
+    
         data.forEach(row => {
-            // Split variations and languages
-            const variations = row.variation.split('|');
-            const languages = row.lang.split('|');
+            const variation = row.variation;
+            const lang = row.lang;
             
-            variations.forEach(variation => {
-                result[variation] = result[variation] || {};
-                
-                languages.forEach(lang => {
-                    result[variation][lang] = result[variation][lang] || {};
-                    result[variation][lang][row.key] = row.value;
-                });
+            // Initialize structure if needed
+            result[variation] = result[variation] || {};
+            result[variation][lang] = result[variation][lang] || {};
+            
+            // Dynamically assign all data columns
+            dataColumns.forEach(column => {
+                result[variation][lang][column] = row[column];
             });
         });
-
+    
         return result;
     }
 
@@ -446,7 +450,7 @@ class AutomationService {
         return presignedUrl;
     }
 
-    async mergeData(outputPresignedUrl, datasourcePresignedUrl, outputFolderPath) {
+    async mergeData(outputPresignedUrl, datasourcePresignedUrl, outputFolderPath, inputs) {
         const templatePresignedUrl = await this.getAssetPresignedUrl(this.assetPath);
 
         const data = {
@@ -468,7 +472,7 @@ class AutomationService {
                 outputMediaType: 'application/x-indesign',
                 targetDocument: 'destination.indd',
                 outputFolderPath: 'outputfolder',
-                outputFileBaseString: 'merged',
+                outputFileBaseString: 'merged-template',
                 dataSource: 'datasource.csv',
                 imagePlacementOptions: {
                     fittingOption: 'content_aware_fit'
@@ -479,22 +483,22 @@ class AutomationService {
                     destination: {
                         url: outputPresignedUrl
                     },
-                    source: 'outputfolder/range1/merged.indd'
+                    source: 'outputfolder/range1/merged-template.indd'
                 }
             ]
         };
 
-        const imagePaths = await this.retrieveAssetPathsFromPath(`${this.automationRelativePath}/inputs`);
+        const assetPaths = Object.values(inputs.variations).flatMap(variation => variation.imagePaths);
      
-        for (const imagePath of imagePaths) {
-            const imageBasename = path.parse(imagePath).base;
-            const imageSourcePresignedUrl = await this.getAssetPresignedUrl(imagePath);
+        for (const assetPath of assetPaths) {
+            const assetBasename = path.parse(assetPath).base;
+            const assetSourcePresignedUrl = await this.getAssetPresignedUrl(assetPath);
             data.assets.push(
                 {
                     source: {
-                        url: imageSourcePresignedUrl
+                        url: assetSourcePresignedUrl
                     },
-                    destination: imageBasename
+                    destination: assetBasename
                 }
             );
         }
@@ -510,7 +514,7 @@ class AutomationService {
             const result = await response.json();
 
             // Block until file has been uploaded
-            await this.uploadFileToAEM(outputPresignedUrl, outputFolderPath, 'merged.indd');
+            await this.uploadFileToAEM(outputPresignedUrl, outputFolderPath, 'merged-template.indd');
             
             const resultStatus = await this.fetchResultStatus(result.statusUrl);
             const recordIndex = resultStatus.data.records[0].recordIndex;
@@ -522,7 +526,7 @@ class AutomationService {
         }
     }
 
-    async createRendition(inputPresignedUrl, recordIndexBounds, outputFolderPath, rows) {
+    async createRendition(inputPresignedUrl, recordIndexBounds, outputFolderPath, rows, inputs) {
         const data = {
             assets: [
                 {
@@ -539,7 +543,12 @@ class AutomationService {
                 outputFolderPath: 'outputfolder',
                 quality: 'maximum',
                 resolution: this.resolution,
-                createSeparateFiles: true
+                createSeparateFiles: true,
+                generalSettings: {
+                    fonts: {
+                        fontsDirectories: ['fontFolder']
+                    }
+                }
             },
             outputs: []
         };
@@ -572,6 +581,21 @@ class AutomationService {
                         url: outputPresignedUrl
                     },
                     source: `outputfolder/${fileName}`
+                }
+            );
+        }
+
+        const assetPaths = inputs.fontPaths;
+     
+        for (const assetPath of assetPaths) {
+            const assetBasename = path.parse(assetPath).base;
+            const assetSourcePresignedUrl = await this.getAssetPresignedUrl(assetPath);
+            data.assets.push(
+                {
+                    source: {
+                        url: assetSourcePresignedUrl
+                    },
+                    destination: `fontFolder/${assetBasename}`
                 }
             );
         }
@@ -619,8 +643,8 @@ class AutomationService {
         const dataCsv = this.generateCsvFromRows(headers, rows);
         const datasourcePresignedUrl = await this.generatePresignedUrlFromCsv(dataCsv);
 
-        const recordIndexBounds = await this.mergeData(tempPresignedUrl, datasourcePresignedUrl, outputFolderPath);
-        await this.createRendition(tempPresignedUrl, recordIndexBounds, outputFolderPath, rows);
+        const recordIndexBounds = await this.mergeData(tempPresignedUrl, datasourcePresignedUrl, outputFolderPath, inputs);
+        await this.createRendition(tempPresignedUrl, recordIndexBounds, outputFolderPath, rows, inputs);
     }
 
     async createAEMRendition(path) {
