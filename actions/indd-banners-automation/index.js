@@ -202,47 +202,6 @@ class AutomationService {
         return entities;
     }
 
-    async retrieveTextsByLanguage(filePath) {
-        const csvContent = await this.executeAEMRequest('GET', 'application/json', 'text', filePath);
-        
-        const lines = csvContent.trim().split('\n').filter(line => line);
-        const headers = lines[0].split(',').map(header => header.trim());
-        
-        const data = lines.slice(1).map(line => {
-            const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)
-                .map(val => val.replace(/^"|"$/g, '').trim());
-                
-            return headers.reduce((obj, header, index) => {
-                obj[header] = values[index];
-                return obj;
-            }, {});
-        });
-    
-        // Create grouped result
-        const result = {};
-    
-        // Identify which columns are data columns (not variation or lang)
-        const dataColumns = headers.filter(header => 
-            header !== 'variation' && header !== 'lang'
-        );
-    
-        data.forEach(row => {
-            const variation = row.variation;
-            const lang = row.lang;
-            
-            // Initialize structure if needed
-            result[variation] = result[variation] || {};
-            result[variation][lang] = result[variation][lang] || {};
-            
-            // Dynamically assign all data columns
-            dataColumns.forEach(column => {
-                result[variation][lang][column] = row[column];
-            });
-        });
-    
-        return result;
-    }
-
     async retrieveInputs() { 
         const inputsRelativePath = `${this.automationRelativePath}/inputs`;
         const response = await this.executeAEMRequest('GET', 'application/json', 'json', `/api/assets/${inputsRelativePath}.json`);
@@ -268,14 +227,6 @@ class AutomationService {
                 result.fontPaths.push(filePath);  
             }
 
-            if ('text/csv' == fileFormat) {
-                const texts = await this.retrieveTextsByLanguage(filePath);
-                for (const [segment, languages] of Object.entries(texts)) {
-                    result.variations[segment] ??= {};
-                    result.variations[segment].languages = languages;
-                }
-            }
-
             const filenameParts = filename.split('--');
             if (filenameParts.length == 2) {
                 const segment = filenameParts[0];
@@ -296,111 +247,33 @@ class AutomationService {
         return result;   
     }
 
-    validateInputs(inputs) {
-        const variations = inputs.variations;
-     
-        Object.entries(variations).forEach(([variationName, variation]) => {
-            // Check if imagePaths exists and has at least one element
-            if (!variation.imagePaths || !Array.isArray(variation.imagePaths) || variation.imagePaths.length === 0) {
-                throw new Error(`Variation "${variationName}" must have at least one image`);
-            }
-     
-            // Check if languages exists and has at least one language object
-            if (!variation.languages || typeof variation.languages !== 'object' || Object.keys(variation.languages).length === 0) {
-                throw new Error(`Variation "${variationName}" must have at least one language`);
-            }
-        });     
+    async parseCsv() {
+        const csvData = await this.executeAEMRequest('GET', 'application/json', 'text', `${DAM_ROOT_PATH}${this.automationRelativePath}/inputs/data.csv`);
+
+        const rows = csvData.trim().split('\n');
+        const dataRows = rows.slice(1);
+        
+        const rowElements = dataRows.map(row => {
+          const columns = row.split(',');
+          
+          return {
+            variation: columns[0],
+            lang: columns[1]
+          };
+        });
+
+        const datasourcePresignedUrl = await this.generatePresignURL();
+
+        const tempPath = uuid4();
+        fs.writeFileSync(tempPath, csvData, 'utf16le');
+
+        await uploadFileConcurrently(tempPath, datasourcePresignedUrl);
+
+        this.files.delete(tempPath);
+
+        return { datasourcePresignedUrl, rowElements };
     }
 
-    createRowsFromVariations(data) {
-        const variations = data.variations;
-        const rows = [];
-        const allLanguageKeys = new Set();
-        const imageColumnNames = new Map(); // Map to store unique column names
-        
-        // First pass: collect all unique language keys and determine image column names
-        Object.entries(variations).forEach(([variationName, variationData]) => {
-            // Collect language keys
-            Object.values(variationData.languages).forEach(langData => {
-                Object.keys(langData).forEach(key => allLanguageKeys.add(key));
-            });
-            
-            // Process image paths to determine column names
-            variationData.imagePaths.forEach((imagePath, index) => {
-                const filename = imagePath.split('/').pop(); // Get just the filename
-                // Extract the part after "--" and before the extension
-                const match = filename.match(/--([^.]+)\./);
-                if (match) {
-                    const columnName = match[1];
-                    imageColumnNames.set(columnName, true);
-                }
-            });
-        });
-    
-        // Create headers
-        const headers = [
-            'variation',
-            'lang',
-            ...Array.from(allLanguageKeys).sort(),
-            ...Array.from(imageColumnNames.keys()).sort()
-        ];
-    
-        // Create rows
-        Object.entries(variations).forEach(([variationName, variationData]) => {
-            Object.entries(variationData.languages).forEach(([lang, langData]) => {
-                const row = {
-                    variation: variationName,
-                    lang: lang
-                };
-    
-                // Add language keys
-                allLanguageKeys.forEach(key => {
-                    row[key] = langData[key] || '';
-                });
-    
-                // Add image filenames with appropriate column names
-                variationData.imagePaths.forEach(imagePath => {
-                    const filename = imagePath.split('/').pop();
-                    const match = filename.match(/--([^.]+)\./);
-                    if (match) {
-                        const columnName = match[1];
-                        row[columnName] = filename;
-                    }
-                });
-    
-                // Fill in any missing image columns with empty strings
-                imageColumnNames.forEach((_, columnName) => {
-                    if (!row[columnName]) {
-                        row[columnName] = '';
-                    }
-                });
-    
-                rows.push(row);
-            });
-        });
-    
-        return { headers, rows };
-    }
-    
-    generateCsvFromRows(headers, rows) {
-        // Convert to CSV format with all values quoted
-        const csvRows = [];
-        const quotedHeaders = headers.map(header => `"${header}"`);
-        csvRows.push(quotedHeaders.join(','));
-        
-        rows.forEach(row => {
-            const values = headers.map(header => {
-                const value = row[header] || '';
-                // Escape any existing quotes by doubling them
-                const escapedValue = value.replace(/"/g, '""');
-                return `"${escapedValue}"`;
-            });
-            csvRows.push(values.join(','));
-        });
-    
-        return csvRows.join('\n');
-    }
-    
     buildRequestOptions(data) {
         const options = {
             method: 'GET',
@@ -619,32 +492,15 @@ class AutomationService {
         }
     }
 
-    async generatePresignedUrlFromCsv(dataCsv) { 
-        const presignedUrl = await this.generatePresignURL();
-
-        const tempPath = uuid4();
-        fs.writeFileSync(tempPath, dataCsv, 'utf16le');
-
-        await uploadFileConcurrently(tempPath, presignedUrl);
-
-        this.files.delete(tempPath);
-
-        return presignedUrl;
-    }
-
     async executeAutomation() {
         const outputFolderPath = `${DAM_ROOT_PATH}${this.automationRelativePath}/outputs`;
         const tempPresignedUrl = await this.generatePresignURL();
 
         const inputs = await this.retrieveInputs();
-        this.validateInputs(inputs);
-
-        const { headers, rows } = this.createRowsFromVariations(inputs);
-        const dataCsv = this.generateCsvFromRows(headers, rows);
-        const datasourcePresignedUrl = await this.generatePresignedUrlFromCsv(dataCsv);
+        const { datasourcePresignedUrl, rowElements} = await this.parseCsv();
 
         const recordIndexBounds = await this.mergeData(tempPresignedUrl, datasourcePresignedUrl, outputFolderPath, inputs);
-        await this.createRendition(tempPresignedUrl, recordIndexBounds, outputFolderPath, rows, inputs);
+        await this.createRendition(tempPresignedUrl, recordIndexBounds, outputFolderPath, rowElements, inputs);
     }
 
     async createAEMRendition(path) {
