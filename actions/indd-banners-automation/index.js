@@ -49,7 +49,7 @@ class AutomationService {
         this.files = await filesLib.init();
         this.directBinaryAccess = rendition.instructions.directBinaryAccess;
         this.inDesignApiKey = params.inDesignFireflyServicesApiClientId;
-        this.inDesignApiAccessToken = await this.generateInDesignApiAccessToken(params);  
+        this.inDesignApiAccessToken = await this.generateInDesignApiAccessToken(params);
     }
 
     getAemHost(certificate, type) {
@@ -272,7 +272,7 @@ class AutomationService {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${this.inDesignApiAccessToken}`,
                 'x-api-key': this.inDesignApiKey,
-                'x-enable-beta': 'true'
+                /*'x-enable-beta': 'true'*/
             }
         };
     
@@ -282,6 +282,23 @@ class AutomationService {
         }
     
         return options;
+    }
+
+    async buildFontPaths(inputs, data) {
+        const fontPaths = inputs.fontPaths;
+     
+        for (const fontPath of fontPaths) {
+            const fontBasename = path.parse(fontPath).base;
+            const fontPresignedUrl = await this.getAssetPresignedUrl(fontPath);
+            data.assets.push(
+                {
+                    source: {
+                        url: fontPresignedUrl
+                    },
+                    destination: `fontFolder/${fontBasename}`
+                }
+            );
+        }
     }
 
     async fetchResultStatus(url) {
@@ -340,6 +357,11 @@ class AutomationService {
                 dataSource: 'datasource.csv',
                 imagePlacementOptions: {
                     fittingOption: 'content_aware_fit'
+                },
+                generalSettings: {
+                    fonts: {
+                        fontsDirectories: ['fontFolder']
+                    }
                 }
             },
             outputs: [
@@ -364,6 +386,8 @@ class AutomationService {
                 }
             );
         }
+
+        await this.buildFontPaths(inputs, data);
       
         const options = this.buildRequestOptions(data);
 
@@ -378,6 +402,7 @@ class AutomationService {
             await this.uploadFileToAEM(outputPresignedUrl, outputFolderPath, 'merged-template.indd');
             
             const resultStatus = await this.fetchResultStatus(result.statusUrl);
+            
             const recordIndex = resultStatus.data.records[0].recordIndex;
             const recordIndexBounds = recordIndex.split("-");
       
@@ -387,7 +412,7 @@ class AutomationService {
         }
     }
 
-    async createRendition(inputPresignedUrl, recordIndexBounds, outputFolderPath, rows, inputs) {
+    async createRendition(inputPresignedUrl, recordIndexBounds, outputFolderPath, rowElements, inputs) {
         const data = {
             assets: [
                 {
@@ -446,20 +471,7 @@ class AutomationService {
             );
         }
 
-        const assetPaths = inputs.fontPaths;
-     
-        for (const assetPath of assetPaths) {
-            const assetBasename = path.parse(assetPath).base;
-            const assetSourcePresignedUrl = await this.getAssetPresignedUrl(assetPath);
-            data.assets.push(
-                {
-                    source: {
-                        url: assetSourcePresignedUrl
-                    },
-                    destination: `fontFolder/${assetBasename}`
-                }
-            );
-        }
+        await this.buildFontPaths(inputs, data);
       
         const options = this.buildRequestOptions(data);
 
@@ -470,7 +482,7 @@ class AutomationService {
         if (response.ok) { 
             const promises = [];   
             for (let i = 0; i < outputs.length; i++) {
-                const filename = `${rows[i].variation}-${rows[i].lang}.${fileExtension}`;
+                const filename = `${rowElements[i].variation}-${rowElements[i].lang}.${fileExtension}`;
                 const promise = this.uploadFileToAEM(outputs[i].outputPresignedUrl, outputFolderPath, filename);
                 promises.push(promise);
             }
