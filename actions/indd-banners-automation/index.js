@@ -227,7 +227,7 @@ class AutomationService {
                 result.fontPaths.push(filePath);  
             }
 
-            if (/^image\/(png|jpeg|jpg)$/.test(fileFormat)) {
+            if (/^image\/.*$/.test(fileFormat)) {
                 result.imagePaths.push(filePath);  
             }
         };
@@ -284,10 +284,21 @@ class AutomationService {
         return options;
     }
 
-    async buildFontPaths(inputs, data) {
-        const fontPaths = inputs.fontPaths;
+    async buildAssetPaths(inputs, data) {
+        for (const imagePath of inputs.imagePaths) {
+            const imageBasename = path.parse(imagePath).base;
+            const imageSourcePresignedUrl = await this.getAssetPresignedUrl(imagePath);
+            data.assets.push(
+                {
+                    source: {
+                        url: imageSourcePresignedUrl
+                    },
+                    destination: imageBasename
+                }
+            );
+        }
      
-        for (const fontPath of fontPaths) {
+        for (const fontPath of inputs.fontPaths) {
             const fontBasename = path.parse(fontPath).base;
             const fontPresignedUrl = await this.getAssetPresignedUrl(fontPath);
             data.assets.push(
@@ -374,20 +385,7 @@ class AutomationService {
             ]
         };
 
-        for (const imagePath of inputs.imagePaths) {
-            const imageBasename = path.parse(imagePath).base;
-            const imageSourcePresignedUrl = await this.getAssetPresignedUrl(imagePath);
-            data.assets.push(
-                {
-                    source: {
-                        url: imageSourcePresignedUrl
-                    },
-                    destination: imageBasename
-                }
-            );
-        }
-
-        await this.buildFontPaths(inputs, data);
+        await this.buildAssetPaths(inputs, data);
       
         const options = this.buildRequestOptions(data);
 
@@ -471,7 +469,7 @@ class AutomationService {
             );
         }
 
-        await this.buildFontPaths(inputs, data);
+        await this.buildAssetPaths(inputs, data);
       
         const options = this.buildRequestOptions(data);
 
