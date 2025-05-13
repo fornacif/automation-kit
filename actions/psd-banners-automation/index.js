@@ -396,20 +396,7 @@ class AutomationService {
                     id: smartObject.layerId,
                     edit: {},
                     input: this.createPhotoshopInput(editLayerUrl)
-                });
-                
-                // Create new layer - always using the base asset URL
-                options.layers.push({
-                    name: smartObject.imageName,
-                    type: 'smartObject',
-                    visible: false,
-                    add: {
-                        insertAbove: {
-                            name: smartObject.layerName
-                        }
-                    },
-                    input: this.createPhotoshopInput(baseAssetUrl)
-                });
+                });  
             }
         }
     }
