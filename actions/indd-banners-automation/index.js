@@ -284,7 +284,7 @@ class AutomationService {
         return options;
     }
 
-    async buildAssetPaths(inputs, data) {
+    async buildSourceAssets(inputs, data) {
         for (const imagePath of inputs.imagePaths) {
             const imageBasename = path.parse(imagePath).base;
             const imageSourcePresignedUrl = await this.getAssetPresignedUrl(imagePath);
@@ -312,17 +312,6 @@ class AutomationService {
         }
     }
 
-    async fetchResultStatus(url) {
-        const options = this.buildRequestOptions();
-        const response = await fetch(url, options)
-        
-        if (response.ok) {     
-            return await response.json();
-        } else {
-            throw new Error(`Error fetching result status: ${response.statusText}`);
-        }
-    }
-
     async getPresignedUrlWithRetry(path, maxRetries = 10, delayMs = 500) {
         let presignedUrl = '';
         let attempts = 0;
@@ -340,6 +329,37 @@ class AutomationService {
         }
       
         return presignedUrl;
+    }
+
+    async waitBeforeContinue(time) {
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+        await delay(time);
+    }
+
+    async fetchResultStatus(url) {
+        const options = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.inDesignApiAccessToken}`,
+                'x-api-key': this.inDesignApiKey,
+                'x-enable-beta': 'true'
+            }
+        };
+      
+        const response = await fetch(url, options)
+        
+        if (response.ok) {     
+            const resultStatus = await response.json();
+            if ('not_started' == resultStatus.status || 'running' == resultStatus.status) {
+                await this.waitBeforeContinue(1000);
+                return await this.fetchResultStatus(url);
+            } else {
+                return resultStatus;
+            }
+        } else {
+            throw new Error(`Error fetching result status: ${response.statusText}`);
+        }
     }
 
     async mergeData(outputPresignedUrl, datasourcePresignedUrl, outputFolderPath, inputs) {
@@ -385,7 +405,7 @@ class AutomationService {
             ]
         };
 
-        await this.buildAssetPaths(inputs, data);
+        await this.buildSourceAssets(inputs, data);
       
         const options = this.buildRequestOptions(data);
 
@@ -397,9 +417,11 @@ class AutomationService {
             const result = await response.json();
 
             // Block until file has been uploaded
-            await this.uploadFileToAEM(outputPresignedUrl, outputFolderPath, 'merged-template.indd');
+            const assetFilename = path.parse(this.assetPath).name;
+            await this.uploadFileToAEM(outputPresignedUrl, outputFolderPath, `${assetFilename}-merged.indd`);
             
             const resultStatus = await this.fetchResultStatus(result.statusUrl);
+            this.createAEMTask('INDD Automation', `Merge Data produced the following warnings.\n${JSON.stringify(resultStatus.data.warnings, null, 2).replace(/"/g, '').replace(/'/g, "")}`);
             
             const recordIndex = resultStatus.data.records[0].recordIndex;
             const recordIndexBounds = recordIndex.split("-");
@@ -469,7 +491,7 @@ class AutomationService {
             );
         }
 
-        await this.buildAssetPaths(inputs, data);
+        await this.buildSourceAssets(inputs, data);
       
         const options = this.buildRequestOptions(data);
 
@@ -478,9 +500,16 @@ class AutomationService {
         const response = await fetch(`https://indesign.adobe.io/v3/create-rendition`, options);
       
         if (response.ok) { 
-            const promises = [];   
+            const promises = [];
+
+            const result = await response.json();
+            const resultStatus = await this.fetchResultStatus(result.statusUrl);
+
+            this.createAEMTask('INDD Automation', `Create Rendition produced the following warnings.\n${JSON.stringify(resultStatus.data.outputs[0].warnings, null, 2).replace(/"/g, '').replace(/'/g, "")}`);
+
             for (let i = 0; i < outputs.length; i++) {
-                const filename = `${rowElements[i].variation}-${rowElements[i].lang}.${fileExtension}`;
+                const assetFilename = path.parse(this.assetPath).name;
+                const filename = `${assetFilename}-${rowElements[i].variation}-${rowElements[i].lang}.${fileExtension}`;
                 const promise = this.uploadFileToAEM(outputs[i].outputPresignedUrl, outputFolderPath, filename);
                 promises.push(promise);
             }
