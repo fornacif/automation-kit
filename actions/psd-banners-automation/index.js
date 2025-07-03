@@ -3,13 +3,12 @@
 const { worker } = require('@adobe/asset-compute-sdk');
 const aemApiClientLib = require("@adobe/aemcs-api-client-lib");
 const path = require('path');
-const { ServerToServerTokenProvider } = require("@adobe/firefly-services-common-apis");
-const { PhotoshopClient, StorageType, ImageFormatType } = require("@adobe/photoshop-apis");
 const filesLib = require('@adobe/aio-lib-files');
 const { downloadFileConcurrently, uploadFileConcurrently } = require('@adobe/httptransfer');
 const { v4: uuid4 } = require('uuid');
 var fs = require("fs");
 const DirectBinary = require('@adobe/aem-upload');
+const xlsx = require('xlsx');
 
 // Constants
 const DAM_ROOT_PATH = '/content/dam/';
@@ -26,7 +25,8 @@ class AutomationService {
         this.outputFormatType = null;
         this.automationRelativePath = null;
         this.directBinaryAccess = null;
-        this.photoshopClient = null;
+        this.fireflyServicesClientId = null;
+        this.fireflyServicesToken = null;
         this.files = null;
         this.renditionContent = null;
     }
@@ -39,9 +39,8 @@ class AutomationService {
 
     async initialize(rendition, params) {
         const certificate = JSON.parse(rendition.instructions.certificate ?? params.aemCertificate);
-        const fireflyServicesConfig = this.getFireflyServicesConfig(params);
-        
-        this.photoshopClient = new PhotoshopClient(fireflyServicesConfig);
+        this.fireflyServicesClientId = params.fireflyServicesApiClientId;
+        this.fireflyServicesToken = await this.getFireflyServicesToken(params);
         this.aemAuthorHost = this.getAemHost(certificate, 'author');
         this.aemDeliveryHost = this.getAemHost(certificate, 'delivery');
         this.aemAccessToken = (await aemApiClientLib(certificate)).access_token;
@@ -60,19 +59,26 @@ class AutomationService {
         return `https://${type}-${clientIdParts[1]}-${clientIdParts[2]}.adobeaemcloud.com`;
     }
 
-    getFireflyServicesConfig(params) {
-        const authProvider = new ServerToServerTokenProvider({
-            clientId: params.fireflyServicesApiClientId,
-            clientSecret: params.fireflyServicesApiClientSecret,
-            scopes: params.fireflyServicesApiScopes
-        }, {
-            autoRefresh: true
-        });
+    async getFireflyServicesToken(params) {
+        const response = await fetch('https://ims-na1.adobelogin.com/ims/token/v3', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                'grant_type': 'client_credentials',
+                'client_id': params.fireflyServicesApiClientId,
+                'client_secret': params.fireflyServicesApiClientSecret,
+                'scope': 'openid,AdobeID,read_organizations'
+                })
+            });
 
-        return {
-            tokenProvider: authProvider,
-            clientId: params.fireflyServicesApiClientId,
-        };
+        if (!response.ok) {
+            throw new Error(`Failed to get Firefly services token: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data.access_token;
     }
 
     async executeAEMRequest(method, contentType, resultType, path, params = {}) {
@@ -106,6 +112,36 @@ class AutomationService {
         }
     }
 
+    async waitBeforeContinue(time) {
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+        await delay(time);
+    }
+
+    async fetchResultStatus(url) {
+        const options = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.fireflyServicesToken}`,
+                'x-api-key': this.fireflyServicesClientId
+            }
+        };
+      
+        const response = await fetch(url, options)
+        
+        if (response.ok) {     
+            const resultStatus = await response.json();
+            if (['pending', 'starting', 'running'].includes(resultStatus.outputs[0].status)) {
+                await this.waitBeforeContinue(1000);
+                return await this.fetchResultStatus(url);
+            } else {
+                return resultStatus.outputs[0];
+            }
+        } else {
+            throw new Error(`Error fetching result status: ${response.statusText}`);
+        }
+    }
+
     createPhotoshopInput(externalUrl) {
         return {
             href: externalUrl,
@@ -135,16 +171,28 @@ class AutomationService {
     }
 
     async extractDocumentManifest(inputUrl) {
-        return await this.photoshopClient.getDocumentManifest({
-            inputs: [this.createPhotoshopInput(inputUrl)]
-        });
+        const response = await fetch('https://image.adobe.io/pie/psdService/documentManifest', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.fireflyServicesToken}`,
+                'x-api-key': this.fireflyServicesClientId,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                inputs: [this.createPhotoshopInput(inputUrl)]
+            })
+        }); 
+
+        if (!response.ok) {
+            throw new Error(`Document manifest extraction failed: ${response.statusText}`);
+        }   
+        const result = await response.json();
+        return await this.fetchResultStatus(result['_links'].self.href);
     }
 
-    async retrieveTextsByLanguage(filePath) {
-        const csvContent = await this.executeAEMRequest('GET', 'application/json', 'text', filePath);
-        
+    async retrieveTextsByLanguage(csvContent) {
         const lines = csvContent.trim().split('\n').filter(line => line);
-        const headers = lines[0].split(',').map(header => header.trim());
+        const headers = lines[0].split(',').map(header => header.replace(/^"|"$/g, '').trim());
         
         const data = lines.slice(1).map(line => {
             const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)
@@ -207,7 +255,31 @@ class AutomationService {
             }
 
             if ('text/csv' == fileFormat) {
-                const texts = await this.retrieveTextsByLanguage(filePath);
+                const csvContent = await this.executeAEMRequest('GET', 'application/json', 'text', filePath);
+                const texts = await this.retrieveTextsByLanguage(csvContent);
+                for (const [segment, languages] of Object.entries(texts)) {
+                    result.variations[segment] ??= {};
+                    result.variations[segment].languages = languages;
+                }
+            }
+
+            if ('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' == fileFormat) {
+                const generatedId = uuid4();
+                const xlsxFilePath = `${generatedId}/temp.xlsx`;
+                await downloadFileConcurrently(
+                    `${this.aemAuthorHost}/${filePath}`,
+                    xlsxFilePath,
+                    {
+                        mkdirs: true,
+                        headers: { Authorization: `Bearer ${this.aemAccessToken}` }
+                    }
+                );
+                const workbook = xlsx.readFile(xlsxFilePath);
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const csvContent = xlsx.utils.sheet_to_csv(worksheet, { forceQuotes: true });
+
+                const texts = await this.retrieveTextsByLanguage(csvContent);
                 for (const [segment, languages] of Object.entries(texts)) {
                     result.variations[segment] ??= {};
                     result.variations[segment].languages = languages;
@@ -396,7 +468,7 @@ class AutomationService {
                     id: smartObject.layerId,
                     edit: {},
                     input: this.createPhotoshopInput(editLayerUrl)
-                });  
+                });
             }
         }
     }
@@ -429,7 +501,7 @@ class AutomationService {
     }
 
     async generateAssets(inputUrl, documentManifest, outputFolderPath, variationName, fontPaths, imagePaths, languageName, languageContent) {
-        const layers = documentManifest.result.outputs[0].layers;
+        const layers = documentManifest.layers;
         const variationOutputFilename = `${variationName}-${languageName}.psd`;
 
         // Create temporary file for intermediate processing
@@ -460,12 +532,26 @@ class AutomationService {
 
         this.renditionContent += `\n ---- photoshopOptions for variation ${variationName} and language ${languageName} ----\n ${JSON.stringify(photoshopOptions, null, 2)}`;
 
+ 
         // First phase: Modify document with smart objects
-        await this.photoshopClient.modifyDocument({
-            inputs: [this.createPhotoshopInput(inputUrl)],
-            options: photoshopOptions,
-            outputs: [this.createPhotoshopOutput(tempPsdUrl, ImageFormatType.IMAGE_VND_ADOBE_PHOTOSHOP)]
+        const documentOperationsResponse = await fetch('https://image.adobe.io/pie/psdService/documentOperations', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.fireflyServicesToken}`,
+                'x-api-key': this.fireflyServicesClientId,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                inputs: [this.createPhotoshopInput(inputUrl)],
+                options: photoshopOptions,
+                outputs: [this.createPhotoshopOutput(tempPsdUrl, ImageFormatType.IMAGE_VND_ADOBE_PHOTOSHOP)]
+            })
         });
+        if (!documentOperationsResponse.ok) {
+            throw new Error(`Document operations failed: ${documentOperationsResponse.statusText}`);
+        }
+        const documentOperationsResult = await documentOperationsResponse.json();
+        await this.fetchResultStatus(documentOperationsResult['_links'].self.href);
 
         // Second phase: Edit text layers
         const textOptions = {};
@@ -474,11 +560,25 @@ class AutomationService {
 
         this.renditionContent += `\n ---- textOptions for variation ${variationName} and language ${languageName} ----\n ${JSON.stringify(textOptions, null, 2)}`;
 
-        await this.photoshopClient.editTextLayer({
-            inputs: [this.createPhotoshopInput(tempPsdUrl)],
-            options: textOptions,
-            outputs: photoshopOutputs
+        const textResponse = await fetch('https://image.adobe.io/pie/psdService/text', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.fireflyServicesToken}`,
+                'x-api-key': this.fireflyServicesClientId,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                inputs: [this.createPhotoshopInput(tempPsdUrl)],
+                options: textOptions,
+                outputs: photoshopOutputs
+            })
         });
+
+        if (!textResponse.ok) {
+            throw new Error(`Text editing failed: ${textResponse.statusText}`);
+        }
+        const textResult = await textResponse.json();
+        await this.fetchResultStatus(textResult['_links'].self.href);
 
         // Perform all AEM uploads
         await Promise.all(aemUploads.map(({presignedUrl, filename}) => this.uploadFileToAEM(presignedUrl, outputFolderPath, filename)));
@@ -555,13 +655,7 @@ exports.main = worker(async (source, rendition, params) => {
     try {
         service = await AutomationService.create(rendition, params);
 
-        process.on('unhandledRejection', (error) => {
-            console.error(error);
-        });
-
         await service.executeAutomation();
-
-        await service.createAEMRendition(rendition.path);
         
         const durationSeconds = Math.round((performance.now() - startTime) / 1000);
         executionDescription = `Execution succeeded in ${durationSeconds} seconds`;
@@ -571,6 +665,7 @@ exports.main = worker(async (source, rendition, params) => {
         throw error;
     } finally {
         if (service) {
+            await service.createAEMRendition(rendition.path);
             await service.createAEMTask('PSD Automation', executionDescription);
         }
     }
