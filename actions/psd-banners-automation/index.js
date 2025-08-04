@@ -3,12 +3,14 @@
 const { worker } = require('@adobe/asset-compute-sdk');
 const aemApiClientLib = require("@adobe/aemcs-api-client-lib");
 const path = require('path');
+const { StorageType, ImageFormatType } = require("@adobe/photoshop-apis");
 const filesLib = require('@adobe/aio-lib-files');
 const { downloadFileConcurrently, uploadFileConcurrently } = require('@adobe/httptransfer');
 const { v4: uuid4 } = require('uuid');
 var fs = require("fs");
 const DirectBinary = require('@adobe/aem-upload');
 const xlsx = require('xlsx');
+const { log } = require('console');
 
 // Constants
 const DAM_ROOT_PATH = '/content/dam/';
@@ -28,7 +30,7 @@ class AutomationService {
         this.fireflyServicesClientId = null;
         this.fireflyServicesToken = null;
         this.files = null;
-        this.renditionContent = null;
+        this.renditionContent = "error";
     }
 
     static async create(rendition, params) { 
@@ -656,7 +658,7 @@ exports.main = worker(async (source, rendition, params) => {
         service = await AutomationService.create(rendition, params);
 
         await service.executeAutomation();
-        
+
         const durationSeconds = Math.round((performance.now() - startTime) / 1000);
         executionDescription = `Execution succeeded in ${durationSeconds} seconds`;
     } catch (error) {
