@@ -3,11 +3,11 @@
 const { worker } = require('@adobe/asset-compute-sdk');
 const aemApiClientLib = require("@adobe/aemcs-api-client-lib");
 const path = require('path');
-const { ServerToServerTokenProvider } = require("@adobe/firefly-services-common-apis");
-const { PhotoshopClient, StorageType, ImageFormatType } = require("@adobe/photoshop-apis");
+const { StorageType, ImageFormatType } = require("@adobe/photoshop-apis");
 const filesLib = require('@adobe/aio-lib-files');
 const { downloadFileConcurrently, uploadFileConcurrently } = require('@adobe/httptransfer');
 const { v4: uuid4 } = require('uuid');
+const { log, error } = require('console');
 
 // Constants
 const DAM_ROOT_PATH = '/content/dam/';
@@ -23,7 +23,8 @@ class AutomationService {
         this.outputFormatType = null;
         this.automationRelativePath = null;
         this.directBinaryAccess = null;
-        this.photoshopClient = null;
+        this.fireflyServicesClientId = null;
+        this.fireflyServicesToken = null;
         this.files = null;
     }
 
@@ -35,9 +36,8 @@ class AutomationService {
 
     async initialize(rendition, params) {
         const certificate = JSON.parse(rendition.instructions.certificate ?? params.aemCertificate);
-        const fireflyServicesConfig = this.getFireflyServicesConfig(params);
-        
-        this.photoshopClient = new PhotoshopClient(fireflyServicesConfig);
+        this.fireflyServicesClientId = params.fireflyServicesApiClientId;
+        this.fireflyServicesToken = await this.getFireflyServicesToken(params);
         this.aemAuthorHost = this.getAemHost(certificate, 'author');
         this.aemAccessToken = (await aemApiClientLib(certificate)).access_token;
         this.assetPath = rendition.instructions.userData.assetPath;
@@ -54,19 +54,26 @@ class AutomationService {
         return `https://${type}-${clientIdParts[1]}-${clientIdParts[2]}.adobeaemcloud.com`;
     }
 
-    getFireflyServicesConfig(params) {
-        const authProvider = new ServerToServerTokenProvider({
-            clientId: params.fireflyServicesApiClientId,
-            clientSecret: params.fireflyServicesApiClientSecret,
-            scopes: params.fireflyServicesApiScopes
-        }, {
-            autoRefresh: true
-        });
+    async getFireflyServicesToken(params) {
+        const response = await fetch('https://ims-na1.adobelogin.com/ims/token/v3', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                'grant_type': 'client_credentials',
+                'client_id': params.fireflyServicesApiClientId,
+                'client_secret': params.fireflyServicesApiClientSecret,
+                'scope': 'openid,AdobeID,read_organizations'
+                })
+            });
 
-        return {
-            tokenProvider: authProvider,
-            clientId: params.fireflyServicesApiClientId,
-        };
+        if (!response.ok) {
+            throw new Error(`Failed to get Firefly services token: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data.access_token;
     }
 
     async executeAEMRequest(method, contentType, resultType, path, params = {}) {
@@ -97,6 +104,36 @@ class AutomationService {
             case 'text': return await response.text();
             case 'json': return await response.json();
             default: new Error(`AEM request failed: invalid result type ${resultType}`);
+        }
+    }
+
+    async waitBeforeContinue(time) {
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+        await delay(time);
+    }
+
+    async fetchResultStatus(url) {
+        const options = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.fireflyServicesToken}`,
+                'x-api-key': this.fireflyServicesClientId
+            }
+        };
+      
+        const response = await fetch(url, options)
+        
+        if (response.ok) {     
+            const resultStatus = await response.json();
+            if (['pending', 'starting', 'running'].includes(resultStatus.outputs[0].status)) {
+                await this.waitBeforeContinue(1000);
+                return await this.fetchResultStatus(url);
+            } else {
+                return resultStatus.outputs[0];
+            }
+        } else {
+            throw new Error(`Error fetching result status: ${response.statusText}`);
         }
     }
 
@@ -167,12 +204,25 @@ class AutomationService {
             expiryInSeconds: DEFAULT_EXPIRY_SECONDS,
             permissions: DEFAULT_FILE_PERMISSIONS
         });
-        
-        await this.photoshopClient.applyAutoCrop({
-            inputs: [this.createPhotoshopInput(inputUrl)],
-            options: photoshopOptions,
-            outputs: [this.createPhotoshopOutput(outputUrl, this.outputFormatType)]
+
+        const productCropResponse = await fetch('https://image.adobe.io/pie/psdService/productCrop', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.fireflyServicesToken}`,
+                'x-api-key': this.fireflyServicesClientId,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                inputs: [this.createPhotoshopInput(inputUrl)],
+                options: photoshopOptions,
+                outputs: [this.createPhotoshopOutput(outputUrl, this.outputFormatType)]
+            })
         });
+        if (!productCropResponse.ok) {
+            throw new Error(`Product Crop failed: ${productCropResponse.statusText}`);
+        }
+        const productCropResult = await productCropResponse.json();
+        await this.fetchResultStatus(productCropResult['_links'].self.href);
 
         await downloadFileConcurrently(outputUrl, rendition.path);   
     }
@@ -197,18 +247,14 @@ exports.main = worker(async (source, rendition, params) => {
 
     try {
         service = await AutomationService.create(rendition, params);
-        process.on('unhandledRejection', (error) => {
-            console.error(error);
-        });
-
         await service.executeAutomation(rendition);
         
         const durationSeconds = Math.round((performance.now() - startTime) / 1000);
         executionDescription = `Execution succeeded in ${durationSeconds} seconds`;
-    } catch (error) {
-        console.error(error);
-        executionDescription = `Execution failed: ${error.stack}`;
-        throw error;
+    } catch (errorCausedBy) {
+        error(errorCausedBy);
+        executionDescription = `Execution failed: ${errorCausedBy.stack}`;
+        throw errorCausedBy;
     } finally {
         if (service) {
             await service.createAEMTask('Product Crop Automation', executionDescription);
