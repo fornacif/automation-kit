@@ -8,6 +8,7 @@ const { downloadFileConcurrently, uploadFileConcurrently } = require('@adobe/htt
 const { v4: uuid4 } = require('uuid');
 var fs = require("fs");
 const DirectBinary = require('@adobe/aem-upload');
+const xlsx = require('xlsx');
 
 // Constants
 const DAM_ROOT_PATH = '/content/dam/';
@@ -44,10 +45,10 @@ class AutomationService {
         const { 'jcr:createdBy': ownerId }  = await this.executeAEMRequest('GET', 'application/json', 'json', `${this.assetPath}.json`);
         this.assetOwnerId = ownerId;
         this.automationRelativePath = path.dirname(this.assetPath).replace(DAM_ROOT_PATH, '');
-        this.outputFormatType = rendition.instructions.outputFormatType;
-        this.resolution = rendition.instructions.resolution;
+        this.outputFormatType = rendition.instructions.outputFormatType || 'image/jpeg';
+        this.resolution = rendition.instructions.resolution || 300;
         this.files = await filesLib.init();
-        this.directBinaryAccess = rendition.instructions.directBinaryAccess;
+        this.directBinaryAccess = rendition.instructions.directBinaryAccess === 'true';
         this.inDesignApiKey = params.inDesignFireflyServicesApiClientId;
         this.inDesignApiAccessToken = await this.generateInDesignApiAccessToken(params);
     }
@@ -130,7 +131,7 @@ class AutomationService {
     }
 
     async getAssetPresignedUrl(assetPath) {
-        if (this.directBinaryAccess === 'true') {
+        if (this.directBinaryAccess) {
             return await this.executeAEMRequest('GET', 'application/json', 'text', '/bin/dbauri', { assetPath });
         }
 
@@ -202,18 +203,43 @@ class AutomationService {
         return entities;
     }
 
+    async parseCsvAndBuildPresignedUrl(csvContent) {
+        const rows = csvContent.trim().split('\n');
+        const dataRows = rows.slice(1);
+        
+        const rowElements = dataRows.map(row => {
+          const columns = row.split(',');
+          
+          return {
+            variation: columns[0].replace(/^"|"$/g, ''),
+            lang: columns[1].replace(/^"|"$/g, '')
+          };
+        });
+
+        const datasourcePresignedUrl = await this.generatePresignURL();
+
+        const tempPath = uuid4();
+        fs.writeFileSync(tempPath, csvContent, 'utf16le');
+
+        await uploadFileConcurrently(tempPath, datasourcePresignedUrl);
+
+        this.files.delete(tempPath);
+
+        return { datasourcePresignedUrl, rowElements };
+    }
+
     async retrieveInputs() { 
         const inputsRelativePath = `${this.automationRelativePath}/inputs`;
         const response = await this.executeAEMRequest('GET', 'application/json', 'json', `/api/assets/${inputsRelativePath}.json`);
     
-        const result = {
+        const inputs = {
             fontPaths: [],
             imagePaths: []
         };
-    
+
         // Return early if no entities
         if (!response.entities?.length) {
-            return result;
+            return inputs;
         }
 
         const assets = response.entities.filter(entity => entity.class == 'assets/asset');
@@ -224,45 +250,47 @@ class AutomationService {
             const filePath = `${DAM_ROOT_PATH}${inputsRelativePath}/${filename}`;
 
             if (/^font\/(otf|ttf)$/.test(fileFormat)) {
-                result.fontPaths.push(filePath);  
+                inputs.fontPaths.push(filePath);  
             }
 
             if (/^image\/.*$/.test(fileFormat)) {
-                result.imagePaths.push(filePath);  
+                inputs.imagePaths.push(filePath);
             }
+
+            if ('text/csv' == fileFormat) {
+                const csvContent = await this.executeAEMRequest('GET', 'application/json', 'text', filePath);
+
+                const { datasourcePresignedUrl, rowElements } = await this.parseCsvAndBuildPresignedUrl(csvContent);
+                inputs.datasourcePresignedUrl = datasourcePresignedUrl;
+                inputs.rowElements = rowElements;
+            }
+
+            if ('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' == fileFormat) {
+                const generatedId = uuid4();
+                const xlsxFilePath = `${generatedId}/temp.xlsx`;
+                await downloadFileConcurrently(
+                    `${this.aemAuthorHost}/${filePath}`,
+                    xlsxFilePath,
+                    {
+                        mkdirs: true,
+                        headers: { Authorization: `Bearer ${this.aemAccessToken}` }
+                    }
+                );
+                const workbook = xlsx.readFile(xlsxFilePath);
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const csvContent = xlsx.utils.sheet_to_csv(worksheet, { forceQuotes: true });
+
+                const { datasourcePresignedUrl, rowElements } = await this.parseCsvAndBuildPresignedUrl(csvContent);
+                inputs.datasourcePresignedUrl = datasourcePresignedUrl;
+                inputs.rowElements = rowElements;
+            }
+
         };
     
-        console.info(`retrieveInputs [${inputsRelativePath}] ${JSON.stringify(result)}`);
-        this.renditionContent = `---- Retrieved Inputs ----\n ${JSON.stringify(result, null, 2)}`;
+        this.renditionContent = `---- Retrieved Inputs ----\n ${JSON.stringify(inputs, null, 2)}`;
         
-        return result;   
-    }
-
-    async parseCsv() {
-        const csvData = await this.executeAEMRequest('GET', 'application/json', 'text', `${DAM_ROOT_PATH}${this.automationRelativePath}/inputs/data.csv`);
-
-        const rows = csvData.trim().split('\n');
-        const dataRows = rows.slice(1);
-        
-        const rowElements = dataRows.map(row => {
-          const columns = row.split(',');
-          
-          return {
-            variation: columns[0],
-            lang: columns[1]
-          };
-        });
-
-        const datasourcePresignedUrl = await this.generatePresignURL();
-
-        const tempPath = uuid4();
-        fs.writeFileSync(tempPath, csvData, 'utf16le');
-
-        await uploadFileConcurrently(tempPath, datasourcePresignedUrl);
-
-        this.files.delete(tempPath);
-
-        return { datasourcePresignedUrl, rowElements };
+        return inputs; 
     }
 
     buildRequestOptions(data) {
@@ -362,7 +390,7 @@ class AutomationService {
         }
     }
 
-    async mergeData(outputPresignedUrl, datasourcePresignedUrl, outputFolderPath, inputs) {
+    async mergeData(outputPresignedUrl, outputFolderPath, inputs) {
         const templatePresignedUrl = await this.getAssetPresignedUrl(this.assetPath);
 
         const data = {
@@ -375,7 +403,7 @@ class AutomationService {
                 },
                 {
                     source: {
-                        url: datasourcePresignedUrl
+                        url: inputs.datasourcePresignedUrl
                     },
                     destination: 'datasource.csv'
                 }
@@ -432,7 +460,7 @@ class AutomationService {
         }
     }
 
-    async createRendition(inputPresignedUrl, recordIndexBounds, outputFolderPath, rowElements, inputs) {
+    async createRendition(inputPresignedUrl, recordIndexBounds, outputFolderPath, inputs) {
         const data = {
             assets: [
                 {
@@ -509,7 +537,7 @@ class AutomationService {
 
             for (let i = 0; i < outputs.length; i++) {
                 const assetFilename = path.parse(this.assetPath).name;
-                const filename = `${assetFilename}-${rowElements[i].variation}-${rowElements[i].lang}.${fileExtension}`;
+                const filename = `${assetFilename}-${inputs.rowElements[i].variation}-${inputs.rowElements[i].lang}.${fileExtension}`;
                 const promise = this.uploadFileToAEM(outputs[i].outputPresignedUrl, outputFolderPath, filename);
                 promises.push(promise);
             }
@@ -524,10 +552,9 @@ class AutomationService {
         const tempPresignedUrl = await this.generatePresignURL();
 
         const inputs = await this.retrieveInputs();
-        const { datasourcePresignedUrl, rowElements} = await this.parseCsv();
 
-        const recordIndexBounds = await this.mergeData(tempPresignedUrl, datasourcePresignedUrl, outputFolderPath, inputs);
-        await this.createRendition(tempPresignedUrl, recordIndexBounds, outputFolderPath, rowElements, inputs);
+        const recordIndexBounds = await this.mergeData(tempPresignedUrl, outputFolderPath, inputs);
+        await this.createRendition(tempPresignedUrl, recordIndexBounds, outputFolderPath, inputs);
     }
 
     async createAEMRendition(path) {
@@ -555,11 +582,6 @@ exports.main = worker(async (source, rendition, params) => {
 
     try {
         service = await AutomationService.create(rendition, params);
-
-        process.on('unhandledRejection', (error) => {
-            console.error(error);
-        });
-
         await service.executeAutomation();
 
         const durationSeconds = Math.round((performance.now() - startTime) / 1000);

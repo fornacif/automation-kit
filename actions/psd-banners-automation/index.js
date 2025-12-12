@@ -51,8 +51,8 @@ class AutomationService {
         this.templateAssetId = assetId;
         this.assetOwnerId = ownerId;
         this.automationRelativePath = path.dirname(this.assetPath).replace(DAM_ROOT_PATH, '');
-        this.outputFormatType = rendition.instructions.outputFormatType;
-        this.directBinaryAccess = rendition.instructions.directBinaryAccess;
+        this.outputFormatType = rendition.instructions.outputFormatType || 'image/jpeg';
+        this.directBinaryAccess = rendition.instructions.directBinaryAccess === 'true';
         this.files = await filesLib.init();
     }
 
@@ -351,7 +351,7 @@ class AutomationService {
     }
 
     async getAssetPresignedUrl(assetPath) {
-        if (this.directBinaryAccess === 'true') {
+        if (this.directBinaryAccess) {
             return await this.executeAEMRequest('GET', 'application/json', 'text', '/bin/dbauri', { assetPath });
         }
 
