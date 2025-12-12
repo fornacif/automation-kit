@@ -41,7 +41,6 @@ The following parameters can be configured in your AEM Processing Profile for Fi
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `certificate` | string | **Yes** | - | The AEM certificate JSON structure obtained from [AEM Certificate Setup](#aem-certificate-setup) |
-| `directBinaryAccess` | boolean | No | `true` | Enables direct binary access for improved performance |
 | `numVariations` | number | No | `1` | Number of similar image variations to generate. Range: 1-4 |
 | `imageWidth` | number | No | `2688` | Width of the generated images in pixels |
 | `imageHeight` | number | No | `1536` | Height of the generated images in pixels |
@@ -50,7 +49,6 @@ The following parameters can be configured in your AEM Processing Profile for Fi
 ```yaml
 Service Parameters:
 - certificate: {YOUR_AEM_CERTIFICATE_JSON}
-- directBinaryAccess: true
 - numVariations: 1
 - imageWidth: 2688
 - imageHeight: 1536

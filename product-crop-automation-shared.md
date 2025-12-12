@@ -43,7 +43,6 @@ The following parameters can be configured in your AEM Processing Profile for Pr
 | `certificate` | string | **Yes** | - | The AEM certificate JSON structure obtained from [AEM Certificate Setup](#aem-certificate-setup) |
 | `createAsset` | boolean | No | `true` | Creates a new asset in AEM with the cropped image |
 | `createRendition` | boolean | No | `false` | Creates a rendition of the original asset instead of a new asset |
-| `directBinaryAccess` | boolean | No | `true` | Enables direct binary access for improved performance |
 | `outputFormatType` | string | No | `image/jpeg` | Output format for the generated image. Supported values: `image/jpeg`, `image/png` |
 | `paddingWidth` | number | No | `50` | Horizontal padding in pixels to add around the detected subject |
 | `paddingHeight` | number | No | `50` | Vertical padding in pixels to add around the detected subject |
@@ -55,7 +54,6 @@ Service Parameters:
 - certificate: {YOUR_AEM_CERTIFICATE_JSON}
 - createAsset: true
 - createRendition: false
-- directBinaryAccess: true
 - outputFormatType: image/jpeg
 - paddingWidth: 50
 - paddingHeight: 50
