@@ -50,8 +50,8 @@ class AutomationService {
         this.assetOwnerId = ownerId;
         this.automationRelativePath = path.dirname(this.assetPath).replace(DAM_ROOT_PATH, '');
         this.outputFormatType = rendition.instructions.outputFormatType || 'image/jpeg';
-        this.paddingWidth = rendition.instructions.paddingWidth ? parseInt(rendition.instructions.paddingWidth, 50) : 0;
-        this.paddingHeight = rendition.instructions.paddingHeight ? parseInt(rendition.instructions.paddingHeight, 50) : 0;
+        this.paddingWidth = rendition.instructions.paddingWidth ? parseInt(rendition.instructions.paddingWidth, 10) : 50;
+        this.paddingHeight = rendition.instructions.paddingHeight ? parseInt(rendition.instructions.paddingHeight, 10) : 50;
         this.imageWidth = rendition.instructions.imageWidth ? parseInt(rendition.instructions.imageWidth, 10) : null;
         this.directBinaryAccess = rendition.instructions.directBinaryAccess === 'true';
         this.createAsset = rendition.instructions.createAsset ? rendition.instructions.createAsset === 'true' : true;

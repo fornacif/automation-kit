@@ -45,7 +45,7 @@ class AutomationService {
         const { 'jcr:createdBy': ownerId }  = await this.executeAEMRequest('GET', 'application/json', 'json', `${this.assetPath}.json`);
         this.assetOwnerId = ownerId;
         this.automationRelativePath = path.dirname(this.assetPath).replace(DAM_ROOT_PATH, '');
-        this.outputFormatType = rendition.instructions.outputFormatType || 'image/jpeg';
+        this.outputFormatType = rendition.instructions.outputFormatType || 'application/pdf';
         this.resolution = rendition.instructions.resolution || 300;
         this.files = await filesLib.init();
         this.directBinaryAccess = rendition.instructions.directBinaryAccess === 'true';

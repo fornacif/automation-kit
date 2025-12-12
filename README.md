@@ -27,8 +27,8 @@ The PSD Banners Automation system automates the creation of banner variations by
 
 The INDD Banners Automation system automates the creation of banner variations by generating new InDesign templates and converting them into print-ready format (PDF) or web-ready image formats (JPEG or PNG). This process streamlines marketing asset production and ensures consistency across all banner variations.
 
-1. TODO: INDD Banners Automation (Self hosted)
-2. TODO: INDD Banners Automation (Shared service)
+1. [Self hosted](https://github.com/fornacif/automation-kit/blob/main/indd-banners-automation.md)
+2. [Shared service](https://github.com/fornacif/automation-kit/blob/main/indd-banners-automation-shared.md)
 
 ### Product Crop Automation
 
