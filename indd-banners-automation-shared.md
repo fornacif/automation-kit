@@ -34,7 +34,7 @@ Sample assets can be found in the [samples/indd-banners-automation](https://gith
 ### Image and Element Naming Convention
 
 #### Image Files
-Image files in the `inputs` folder must be referenced in the data file (CSV or Excel) with the `@` prefix for image columns.
+Image files in the `inputs` folder must be referenced in the data file (CSV) with the `@` prefix for image columns.
 
 For example in the data file:
 ```csv
@@ -47,7 +47,7 @@ The `@image` column indicates that the value should be treated as an image file 
 
 ### Data Content Structure
 
-The data content for different variants and languages can be provided in either CSV (`.csv`) or Excel (`.xlsx`) format. For CSV files, each value must be enclosed in double quotes to ensure proper CSV formatting. The structure is:
+The data content for different variants and languages can be provided in CSV (`.csv`) format. For CSV files, each value must be enclosed in double quotes to ensure proper CSV formatting. The structure is:
 
 ```csv
 variation,lang,title,text,@image
@@ -112,7 +112,7 @@ Service Parameters:
 The INDD Banners Automation uses Adobe InDesign Services API to:
 
 1. **Template Processing**: Reads the InDesign template file
-2. **Data Injection**: Parses the data file (CSV or Excel) and maps values to InDesign elements
+2. **Data Injection**: Parses the data file (CSV) and maps values to InDesign elements
 3. **Image Replacement**: Replaces placeholder images with actual assets from the INPUTS folder
 4. **Text Replacement**: Updates text frames with content from the data file
 5. **Export**: Generates output files in the specified format (PDF, JPEG, or PNG)
@@ -142,7 +142,6 @@ This automation enables rapid creation of localized banner variations, maintaini
 
 4. **Data File Issues**
    - Ensure CSV files use proper quoting for text containing commas
-   - Verify Excel files are in `.xlsx` format
    - Check that column names match InDesign element names
 
 5. **Output Quality Issues**
