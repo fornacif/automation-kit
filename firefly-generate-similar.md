@@ -8,14 +8,12 @@ The Firefly Generate Similar feature uses Adobe Firefly's generative AI to autom
 - Adobe Developer Console access
 - App Builder
 - AEM as a Cloud Service instance
-- Dynamic Media or Dynamic Media with Open API
 - Firefly Services API access (credentials)
 - Node.js 18+ installed
 - Adobe I/O CLI installed (`npm install -g @adobe/aio-cli`)
 
 ### Shared service
 - AEM as a Cloud Service instance
-- Dynamic Media or Dynamic Media with Open API
 
 ## Self-hosted Setup
 
