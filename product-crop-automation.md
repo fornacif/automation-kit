@@ -142,8 +142,7 @@ The following parameters can be configured in your AEM Processing Profile for Pr
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `createAsset` | boolean | No | `true` | Creates a new asset in AEM with the cropped image |
-| `createRendition` | boolean | No | `false` | Creates a rendition of the original asset instead of a new asset |
+| `createAsset` | boolean | No | `true` | Creates a new asset in AEM with the cropped image or creates a rendition of the original asset if set to false |
 | `outputFormatType` | string | No | `image/jpeg` | Output format for the generated image. Supported values: `image/jpeg`, `image/png` |
 | `paddingWidth` | number | No | `50` | Horizontal padding in pixels to add around the detected subject |
 | `paddingHeight` | number | No | `50` | Vertical padding in pixels to add around the detected subject |

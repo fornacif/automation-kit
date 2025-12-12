@@ -29,7 +29,7 @@ class AutomationService {
         this.fireflyServicesClientId = null;
         this.fireflyServicesToken = null;
         this.files = null;
-        this.createAsset = false;
+        this.createAsset = null;
         this.renditionContent = '';
     }
 
@@ -54,7 +54,7 @@ class AutomationService {
         this.paddingHeight = rendition.instructions.paddingHeight ? parseInt(rendition.instructions.paddingHeight, 10) : 0;
         this.imageWidth = rendition.instructions.imageWidth ? parseInt(rendition.instructions.imageWidth, 10) : null;
         this.directBinaryAccess = rendition.instructions.directBinaryAccess === 'true';
-        this.createAsset = rendition.instructions.createAsset === 'true';
+        this.createAsset = rendition.instructions.createAsset ? rendition.instructions.createAsset === 'true' : true;
         this.files = await filesLib.init();
     }
 
