@@ -20,26 +20,22 @@ This practical implementation serves as a powerful demonstration of Content Auto
 
 The PSD Banners Automation system automates the creation of banner variations by generating new PSD templates and converting them into web-ready image formats (JPEG or PNG). This process streamlines marketing asset production and ensures consistency across all banner variations.
 
-1. [Self hosted](https://github.com/fornacif/automation-kit/blob/main/psd-banners-automation.md)
-2. [Shared service](https://github.com/fornacif/automation-kit/blob/main/psd-banners-automation-shared.md)
+**Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/psd-banners-automation.md)
 
 ### INDD Banners Automation
 
 The INDD Banners Automation system automates the creation of banner variations by generating new InDesign templates and converting them into print-ready format (PDF) or web-ready image formats (JPEG or PNG). This process streamlines marketing asset production and ensures consistency across all banner variations.
 
-1. [Self hosted](https://github.com/fornacif/automation-kit/blob/main/indd-banners-automation.md)
-2. [Shared service](https://github.com/fornacif/automation-kit/blob/main/indd-banners-automation-shared.md)
+**Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/indd-banners-automation.md)
 
 ### Product Crop Automation
 
 The Product Crop feature provides intelligent image cropping capabilities through AI-powered subject detection, ensuring the product remains perfectly centered and prominent in all generated renditions. The system automatically generates a new asset rendition with generated visual.
 
-1. [Self hosted](https://github.com/fornacif/automation-kit/blob/main/product-crop-automation.md)
-2. [Shared service](https://github.com/fornacif/automation-kit/blob/main/product-crop-automation-shared.md)
+**Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/product-crop-automation.md)
 
 ### Firefly Generate Similar
 
 The Firefly Generate Similar feature uses Adobe Firefly's generative AI to automatically create visually similar variations of your images. This powerful automation leverages advanced machine learning to understand the content, style, and composition of your source image and generate multiple high-quality variations, perfect for A/B testing, creative exploration, or expanding your asset library.
 
-1. [Self hosted](https://github.com/fornacif/automation-kit/blob/main/firefly-generate-similar.md)
-2. [Shared service](https://github.com/fornacif/automation-kit/blob/main/firefly-generate-similar-shared.md)
+**Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/firefly-generate-similar.md)

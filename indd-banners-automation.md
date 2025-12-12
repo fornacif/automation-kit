@@ -1,7 +1,10 @@
-# INDD Banners Automation (Self hosted)
+# INDD Banners Automation
+
+The INDD Banners Automation system automates the creation of banner variations by generating new InDesign templates and converting them into print-ready format (PDF) or web-ready image formats (JPEG or PNG). This document covers both self-hosted and shared service deployment options.
 
 ## Prerequisites
 
+### Self-hosted
 - Adobe Developer Console access
 - App Builder
 - AEM as a Cloud Service instance
@@ -9,7 +12,12 @@
 - Node.js 18+ installed
 - Adobe I/O CLI installed (`npm install -g @adobe/aio-cli`)
 
-## Project Setup
+### Shared service
+- AEM as a Cloud Service instance
+
+## Self-hosted Setup
+
+This section applies only to self-hosted deployments.
 
 ### 1. Initialize Adobe App Builder Project
 
@@ -51,25 +59,7 @@ cd indd-banners-automation
 2. Create an `index.js` file with the content from:
 [actions/indd-banners-automation/index.js](https://github.com/fornacif/automation-kit/blob/main/actions/indd-banners-automation/index.js)
 
-### 3. AEM Certificate Setup
-
-Before configuring your environment, you need to obtain an AEM certificate:
-
-1. Navigate to your AEM Cloud Service Developer Console
-2. Go to "Integrations"
-3. Click "Create new technical account"
-4. After creation, click "View" to see the certificate
-5. Copy the entire certificate JSON structure
-
-Once created, the technical account needs appropriate permissions in AEM:
-1. Navigate to AEM > Tools > Security > Users
-2. Find the technical account (it will appear after its first use)
-3. Add it to appropriate groups or grant necessary permissions
-   Required permissions include:
-   - Assets management
-   - Task creation
-
-### 4. Environment Configuration
+### 3. Environment Configuration
 
 Add the following properties to your `.env` file:
 
@@ -88,7 +78,7 @@ AEM_CERTIFICATE='{
 }'
 ```
 
-### 5. App Configuration
+### 4. App Configuration
 
 Update your `app.config.yaml` with the following:
 
@@ -114,7 +104,7 @@ actions:
 
 More actions can be configured like shown in the [app.config.yaml](https://github.com/fornacif/automation-kit/blob/main/app.config.yaml) present in the repository.
 
-## Deployment
+### 5. Deployment
 
 Deploy your application using the Adobe I/O CLI:
 
@@ -124,7 +114,29 @@ aio app deploy
 
 The deployment will provide you with a web action URL that will be used in the AEM Processing Profile.
 
+## AEM Certificate Setup
+
+**Applies to:** Both self-hosted and shared service
+
+Before configuring your environment, you need to obtain an AEM certificate:
+
+1. Navigate to your AEM Cloud Service Developer Console
+2. Go to "Integrations"
+3. Click "Create new technical account"
+4. After creation, click "View" to see the certificate
+5. Copy the entire certificate JSON structure
+
+Once created, the technical account needs appropriate permissions in AEM:
+1. Navigate to AEM > Tools > Security > Users
+2. Find the technical account (it will appear after its first use)
+3. Add it to appropriate groups or grant necessary permissions
+   Required permissions include:
+   - Assets management
+   - Task creation
+
 ## Sample Assets
+
+**Applies to:** Both self-hosted and shared service
 
 Download the sample assets containing:
 - Sample InDesign templates (`samples/indd-banners-automation/1080x1080.indd`, `samples/indd-banners-automation/800x1080.indd`)
@@ -169,28 +181,41 @@ Where:
 
 ## AEM Configuration
 
+**Applies to:** Both self-hosted and shared service
+
 ### Setup Processing Profile
 
 1. Navigate to AEM Tools > Assets > Processing Profiles
 2. Create a new profile named "INDD Banners Automation"
 3. Add a new Custom Processing Services with the following configuration:
    - `inputs` as Rendition Name and `json` as extension
-   - [Endpoint URL previously deployed](#deployment): {Your deployed web action URL}
+   - **Endpoint URL:**
+     - **Self-hosted:** Use the deployed web action URL from the [deployment step](#5-deployment)
+     - **Shared service:** Contact me for accessing the URL
    - Service Parameters (see below for details)
    - Set `application/vnd.adobe.indesign` for included Mime Type
 
 ### Service Parameters
 
-The following parameters can be configured in your AEM Processing Profile for INDD Banners:
+The following parameters can be configured in your AEM Processing Profile:
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `outputFormatType` | string | No | `application/pdf` | Output format for the generated files. Supported values: `application/pdf`, `image/jpeg`, `image/png` |
-| `resolution` | number | No | `300` | Resolution in DPI (dots per inch) for the output. Recommended: 300 for print, 72-150 for web |
+| Parameter | Type | Required | Deployment | Default | Description |
+|-----------|------|----------|------------|---------|-------------|
+| `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from [AEM Certificate Setup](#aem-certificate-setup) |
+| `outputFormatType` | string | No | Both | `application/pdf` | Output format. Values: `application/pdf`, `image/jpeg`, `image/png` |
+| `resolution` | number | No | Both | `300` | Resolution in DPI. Recommended: 300 for print, 72-150 for web |
 
-**Example Configuration:**
+**Example Configuration (Self-hosted):**
 ```yaml
 Service Parameters:
+- outputFormatType: application/pdf
+- resolution: 300
+```
+
+**Example Configuration (Shared service):**
+```yaml
+Service Parameters:
+- certificate: {YOUR_AEM_CERTIFICATE_JSON}
 - outputFormatType: application/pdf
 - resolution: 300
 ```
@@ -200,15 +225,16 @@ Service Parameters:
 1. Create a new folder
 2. Upload your InDesign template(s)
 3. Create two subfolders: `INPUTS` and `OUTPUTS`
-4. Apply the Processing Profile you created to the folder
-5. (Optional) Enable Dynamic Media on the `INPUTS` folder
-6. (Optional) If Dynamic Media with Open API is enabled, simply approve the assets once they are uploaded
-7. Upload your assets (images, data file) to the `INPUTS` folder
-8. Trigger manually the "INDD Banners Automation" processing profile to the InDesign file (Reprocess Assets)
-9. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
-10. Check that new banners have been created inside the `OUTPUTS` folder
+4. (Optional) Enable Dynamic Media on the `INPUTS` folder
+5. (Optional) If Dynamic Media with Open API is enabled, simply approve the assets once they are uploaded
+6. Upload your assets (images, data file) to the `INPUTS` folder
+7. Trigger manually the "INDD Banners Automation" processing profile to the InDesign file (Reprocess Assets)
+8. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+9. Check that new banners have been created inside the `OUTPUTS` folder
 
 ## How It Works
+
+**Applies to:** Both self-hosted and shared service
 
 The INDD Banners Automation uses Adobe InDesign Services API to:
 
@@ -223,32 +249,40 @@ This automation enables rapid creation of localized banner variations, maintaini
 
 ## Troubleshooting
 
+**Applies to:** Both self-hosted and shared service
+
 ### Common Issues and Solutions
 
 1. **Processing Profile Errors**
    - Verify the web action URL is correct and accessible
    - Check Tasks in the AEM Inbox to see if some errors happened
-   - Check the action logs using:
+   - **Self-hosted only:** Check the action logs using:
      ```bash
      aio app logs
      ```
    - Ensure all required parameters are properly configured
+   - **Shared service only:** Verify the certificate parameter is correctly formatted as JSON
 
-2. **InDesign Template Issues**
+2. **Authentication Issues (Shared service)**
+   - Ensure the AEM certificate is valid and not expired
+   - Verify the technical account has the necessary permissions in AEM
+   - Check that the certificate JSON structure is complete and properly formatted
+
+3. **InDesign Template Issues**
    - Ensure frame names in the template match column names in the data file
    - For image columns, use `@` prefix in the data file header
    - Verify all referenced images exist in the INPUTS folder
 
-3. **Data File Issues**
+4. **Data File Issues**
    - Ensure CSV files use proper quoting for text containing commas
    - Check that column names match InDesign element names
 
-4. **Output Quality Issues**
+5. **Output Quality Issues**
    - Adjust `resolution` parameter for desired output quality
    - Use 300 DPI for print-quality PDFs
    - Use 72-150 DPI for web/screen display
 
-### Debug Mode
+### Debug Mode (Self-hosted only)
 
 Enable debug logging by:
 1. Setting `LOG_LEVEL=debug` in your `.env` file

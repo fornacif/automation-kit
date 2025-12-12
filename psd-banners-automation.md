@@ -1,7 +1,10 @@
-# PSD Banners Automation (Self hosted)
+# PSD Banners Automation
+
+The PSD Banners Automation system automates the creation of banner variations by generating new PSD templates and converting them into web-ready image formats (JPEG or PNG). This document covers both self-hosted and shared service deployment options.
 
 ## Prerequisites
 
+### Self-hosted
 - Adobe Developer Console access
 - App Builder
 - AEM as a Cloud Service instance
@@ -10,7 +13,13 @@
 - Node.js 18+ installed
 - Adobe I/O CLI installed (`npm install -g @adobe/aio-cli`)
 
-## Project Setup
+### Shared service
+- AEM as a Cloud Service instance
+- Dynamic Media or Dynamic Media with Open API
+
+## Self-hosted Setup
+
+This section applies only to self-hosted deployments.
 
 ### 1. Initialize Adobe App Builder Project
 
@@ -52,25 +61,7 @@ cd psd-banners-automation
 2. Create an `index.js` file with the content from:
 [actions/psd-banners-automation/index.js](https://github.com/fornacif/automation-kit/blob/main/actions/psd-banners-automation/index.js)
 
-### 3. AEM Certificate Setup
-
-Before configuring your environment, you need to obtain an AEM certificate:
-
-1. Navigate to your AEM Cloud Service Developer Console
-2. Go to "Integrations"
-3. Click "Create new technical account"
-4. After creation, click "View" to see the certificate
-5. Copy the entire certificate JSON structure
-
-Once created, the technical account needs appropriate permissions in AEM:
-1. Navigate to AEM > Tools > Security > Users
-2. Find the technical account (it will appear after its first use)
-3. Add it to appropriate groups or grant necessary permissions
-   Required permissions include:
-   - Assets management
-   - Task creation
-
-### 4. Environment Configuration
+### 3. Environment Configuration
 
 Add the following properties to your `.env` file:
 
@@ -89,15 +80,7 @@ AEM_CERTIFICATE='{
 }'
 ```
 
-And optionally for InDesign (INDD) Banners Automation.
-
-```plaintext
-INDESIGN_FIREFLY_SERVICES_API_CLIENT_ID=[REDACTED]
-INDESIGN_FIREFLY_SERVICES_API_CLIENT_SECRET=[REDACTED]
-INDESIGN_FIREFLY_SERVICES_API_SCOPES=openid,AdobeID,creative_sdk,indesign_services,creative_cloud
-```
-
-### 5. App Configuration
+### 4. App Configuration
 
 Update your `app.config.yaml` with the following:
 
@@ -121,9 +104,9 @@ actions:
       require-adobe-auth: true
 ```
 
-More actions can be configured like showned in the [app.config.yaml](https://github.com/fornacif/automation-kit/blob/main/app.config.yaml) present in the repository.
+More actions can be configured like shown in the [app.config.yaml](https://github.com/fornacif/automation-kit/blob/main/app.config.yaml) present in the repository.
 
-## Deployment
+### 5. Deployment
 
 Deploy your application using the Adobe I/O CLI:
 
@@ -133,7 +116,29 @@ aio app deploy
 
 The deployment will provide you with a web action URL that will be used in the AEM Processing Profile.
 
+## AEM Certificate Setup
+
+**Applies to:** Both self-hosted and shared service
+
+Before configuring your environment, you need to obtain an AEM certificate:
+
+1. Navigate to your AEM Cloud Service Developer Console
+2. Go to "Integrations"
+3. Click "Create new technical account"
+4. After creation, click "View" to see the certificate
+5. Copy the entire certificate JSON structure
+
+Once created, the technical account needs appropriate permissions in AEM:
+1. Navigate to AEM > Tools > Security > Users
+2. Find the technical account (it will appear after its first use)
+3. Add it to appropriate groups or grant necessary permissions
+   Required permissions include:
+   - Assets management
+   - Task creation
+
 ## Sample Assets
+
+**Applies to:** Both self-hosted and shared service
 
 Download the sample assets containing:
 - Sample PSD template (`samples/psd-banners-automation/template.psd`)
@@ -178,7 +183,7 @@ climbing,en,Climbing,"Feel the raw adventure and excitement of our guided rock c
 climbing,fr,Escalade,"Vivez l'aventure pure et l'excitation de notre expérience d'escalade guidée.",www.wknd.fr
 cycling,en,Cycling,"Join us as we explore the rugged, stunningly gorgeous landscape of southern Utah.",www.wknd.com
 cycling,fr,Cyclisme,"Rejoignez-nous pour explorer les paysages accidentés et spectaculaires du sud de l'Utah.",www.wknd.fr
-skiing,en,Skiing,"If you’re a slopes enthusiast, you know that one run in the backcountry is worth ten in the front country.",www.wknd.com
+skiing,en,Skiing,"If you're a slopes enthusiast, you know that one run in the backcountry is worth ten in the front country.",www.wknd.com
 skiing,fr,Ski,"En tant que passionné de glisse, vous savez qu'une descente en hors-piste vaut dix descentes sur piste.",www.wknd.fr
 surfing,en,Surfing,"Experience local surf guides will take care of all the logistics and find the best spots for you.",www.wknd.com
 surfing,fr,Surf,"Nos guides de surf locaux s'occupent de toute la logistique et trouvent les meilleurs spots pour vous.",www.wknd.fr
@@ -190,6 +195,8 @@ Where:
 - `[any]`: Must match any text layer name in the PSD
 
 ## AEM Configuration
+
+**Applies to:** Both self-hosted and shared service
 
 ### Setup Smart Crop (Optional)
 
@@ -214,11 +221,34 @@ Remember that Smart Crop names in this configuration must match the ones used in
 1. Navigate to AEM Tools > Assets > Processing Profiles
 2. Create a new profile named "PSD Banners Automation"
 3. Add a new Custom Processing Services with the following configuration:
-   - `inputs`as Rendition Name and `json` as extension
-   - [Endpoint URL previously deployed](#deployment): {Your deployed web action URL}
-   - Services Parameters:
-     1. `outputFormatType` as key and `image/jpeg` or `image/png` as value
+   - `inputs` as Rendition Name and `json` as extension
+   - **Endpoint URL:**
+     - **Self-hosted:** Use the deployed web action URL from the [deployment step](#5-deployment)
+     - **Shared service:** Contact me for accessing the URL
+   - Service Parameters (see below for details)
    - Set `image/vnd.adobe.photoshop` for included Mime Type
+
+### Service Parameters
+
+The following parameters can be configured in your AEM Processing Profile:
+
+| Parameter | Type | Required | Deployment | Default | Description |
+|-----------|------|----------|------------|---------|-------------|
+| `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from [AEM Certificate Setup](#aem-certificate-setup) |
+| `outputFormatType` | string | No | Both | - | Output format. Values: `image/jpeg`, `image/png` |
+
+**Example Configuration (Self-hosted):**
+```yaml
+Service Parameters:
+- outputFormatType: image/jpeg
+```
+
+**Example Configuration (Shared service):**
+```yaml
+Service Parameters:
+- certificate: {YOUR_AEM_CERTIFICATE_JSON}
+- outputFormatType: image/jpeg
+```
 
 ### Execute Automation
 
@@ -226,27 +256,35 @@ Remember that Smart Crop names in this configuration must match the ones used in
 2. Upload your PSD template
 3. Create two subfolders: `INPUTS` and `OUTPUTS`
 4. Apply the Image Processing Profile you created previously
-5. (Optional) Enable Dynamic Media on the `INPUTS` folder.
+5. (Optional) Enable Dynamic Media on the `INPUTS` folder
 6. (Optional) If Dynamic Media with Open API is enabled, simply approve the assets once they are uploaded
 7. Upload your assets (images and fonts) to the `INPUTS` folder
-8. Trigger mannually the "PSD Banners Automation" processing profile to the PSD file (Reprocess Assets)
+8. Trigger manually the "PSD Banners Automation" processing profile to the PSD file (Reprocess Assets)
 9. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
 10. Check that new banners have been created inside the `OUTPUTS` folder
 
 ## Troubleshooting
+
+**Applies to:** Both self-hosted and shared service
 
 ### Common Issues and Solutions
 
 1. **Processing Profile Errors**
    - Verify the web action URL is correct and accessible
    - Check Tasks in the AEM Inbox to see if some errors happened
-   - Check the action logs using:
+   - **Self-hosted only:** Check the action logs using:
      ```bash
      aio app logs
      ```
    - Ensure all required parameters are properly configured
+   - **Shared service only:** Verify the certificate parameter is correctly formatted as JSON
 
-### Debug Mode
+2. **Authentication Issues (Shared service)**
+   - Ensure the AEM certificate is valid and not expired
+   - Verify the technical account has the necessary permissions in AEM
+   - Check that the certificate JSON structure is complete and properly formatted
+
+### Debug Mode (Self-hosted only)
 
 Enable debug logging by:
 1. Setting `LOG_LEVEL=debug` in your `.env` file
