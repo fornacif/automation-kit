@@ -36,3 +36,10 @@ The Product Crop feature provides intelligent image cropping capabilities throug
 
 1. [Self hosted](https://github.com/fornacif/automation-kit/blob/main/product-crop-automation.md)
 2. [Shared service](https://github.com/fornacif/automation-kit/blob/main/product-crop-automation-shared.md)
+
+### Firefly Generate Similar
+
+The Firefly Generate Similar feature uses Adobe Firefly's generative AI to automatically create visually similar variations of your images. This powerful automation leverages advanced machine learning to understand the content, style, and composition of your source image and generate multiple high-quality variations, perfect for A/B testing, creative exploration, or expanding your asset library.
+
+1. [Self hosted](https://github.com/fornacif/automation-kit/blob/main/firefly-generate-similar.md)
+2. [Shared service](https://github.com/fornacif/automation-kit/blob/main/firefly-generate-similar-shared.md)

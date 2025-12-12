@@ -28,7 +28,6 @@ class FireflyGenerateSimilarService {
         this.fireflyServicesClientId = null;
         this.fireflyServicesToken = null;
         this.files = null;
-        this.outputFormatType = null;
         this.numVariations = 1;
         this.imageWidth = null;
         this.imageHeight = null;
@@ -51,7 +50,6 @@ class FireflyGenerateSimilarService {
         const { 'jcr:createdBy': ownerId }  = await this.executeAEMRequest('GET', 'application/json', 'json', `${this.assetPath}.json`);
         this.assetOwnerId = ownerId;
         this.automationRelativePath = path.dirname(this.assetPath).replace(DAM_ROOT_PATH, '');
-        this.outputFormatType = rendition.instructions.outputFormatType || 'image/png';
         this.directBinaryAccess = rendition.instructions.directBinaryAccess === 'true';
         this.numVariations = rendition.instructions.numVariations ? parseInt(rendition.instructions.numVariations, 10) : 1;
         this.imageWidth = rendition.instructions.imageWidth ? parseInt(rendition.instructions.imageWidth, 10) : 2688;
@@ -120,6 +118,19 @@ class FireflyGenerateSimilarService {
     async waitBeforeContinue(time) {
         const delay = ms => new Promise(res => setTimeout(res, ms));
         await delay(time);
+    }
+
+    getFileFormat() {
+        const ext = path.extname(this.assetPath).toLowerCase();
+
+        if (ext === '.png') {
+            return { extension: 'png', contentType: 'image/png' };
+        } else if (ext === '.webp') {
+            return { extension: 'webp', contentType: 'image/webp' };
+        }
+
+        // Default to JPEG for .jpg, .jpeg, and any other format
+        return { extension: 'jpeg', contentType: 'image/jpeg' };
     }
 
     async getAssetPresignedUrl(assetPath) {
@@ -211,7 +222,7 @@ class FireflyGenerateSimilarService {
                 headers: {
                     'Authorization': `Bearer ${this.fireflyServicesToken}`,
                     'x-api-key': this.fireflyServicesClientId,
-                    'Content-Type': 'image/jpeg'
+                    'Content-Type': this.getFileFormat().contentType
                 },
                 body: imageBuffer
             });
@@ -285,9 +296,11 @@ class FireflyGenerateSimilarService {
     }
 
     async executeAutomation(rendition) {
+        const fileFormat = this.getFileFormat();
+
         this.renditionContent = `---- Firefly Generate Similar ----\n`;
         this.renditionContent += `Asset Path: ${this.assetPath}\n`;
-        this.renditionContent += `Output Format: ${this.outputFormatType}\n`;
+        this.renditionContent += `Output Format: ${fileFormat.extension}\n`;
         this.renditionContent += `Num Variations: ${this.numVariations}\n`;
         this.renditionContent += `Image Size: ${this.imageWidth}x${this.imageHeight}\n`;
 
@@ -311,17 +324,16 @@ class FireflyGenerateSimilarService {
         // Step 5: Download and upload to AEM
         const assetBasename = path.basename(this.assetPath, path.extname(this.assetPath));
         const outputFolderPath = `${DAM_ROOT_PATH}${this.automationRelativePath}`;
-        const fileExtension = this.outputFormatType === 'image/png' ? 'png' : 'jpeg';
 
         for (let i = 0; i < outputs.length; i++) {
             const output = outputs[i];
             const imageUrl = output.image.url;
 
-            const newAssetName = `${assetBasename}-similar-${i + 1}.${fileExtension}`;
+            const newAssetName = `${assetBasename}-similar-${i + 1}.${fileFormat.extension}`;
 
             // Download from Firefly and upload to AEM
             const generatedId = uuid4();
-            const tempFilePath = `${generatedId}/temp.${fileExtension}`;
+            const tempFilePath = `${generatedId}/temp.${fileFormat.extension}`;
 
             try {
                 await downloadFileConcurrently(imageUrl, tempFilePath, { mkdirs: true });
