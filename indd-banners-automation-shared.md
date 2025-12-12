@@ -27,7 +27,7 @@ Once created, the technical account needs appropriate permissions in AEM:
 Download the sample assets containing:
 - Sample InDesign templates (`samples/indd-banners-automation/1080x1080.indd`, `samples/indd-banners-automation/800x1080.indd`)
 - Sample images (`samples/indd-banners-automation/inputs`)
-- Sample data (`samples/indd-banners-automation/inputs/data.csv` or `data.xlsx`)
+- Sample data (`samples/indd-banners-automation/inputs/data.csv`)
 
 Sample assets can be found in the [samples/indd-banners-automation](https://github.com/fornacif/automation-kit/tree/main/samples/indd-banners-automation) directory of this repository.
 
