@@ -10,7 +10,7 @@ const { v4: uuid4 } = require('uuid');
 var fs = require("fs");
 const DirectBinary = require('@adobe/aem-upload');
 const xlsx = require('xlsx');
-const { log } = require('console');
+const { info, error } = require('console');
 
 // Constants
 const DAM_ROOT_PATH = '/content/dam/';
@@ -302,7 +302,7 @@ class AutomationService {
             }   
         };
     
-        console.info(`retrieveInputs [${inputsRelativePath}] ${JSON.stringify(result)}`);
+        info(`retrieveInputs [${inputsRelativePath}] ${JSON.stringify(result)}`);
         this.renditionContent = `---- Retrieved Inputs ----\n ${JSON.stringify(result, null, 2)}`;
         
         return result;   
@@ -534,7 +534,6 @@ class AutomationService {
 
         this.renditionContent += `\n ---- photoshopOptions for variation ${variationName} and language ${languageName} ----\n ${JSON.stringify(photoshopOptions, null, 2)}`;
 
- 
         // First phase: Modify document with smart objects
         const documentOperationsResponse = await fetch('https://image.adobe.io/pie/psdService/documentOperations', {
             method: 'POST',
@@ -661,10 +660,10 @@ exports.main = worker(async (source, rendition, params) => {
 
         const durationSeconds = Math.round((performance.now() - startTime) / 1000);
         executionDescription = `Execution succeeded in ${durationSeconds} seconds`;
-    } catch (error) {
-        console.error(error);
-        executionDescription = `Execution failed: ${error.stack.replace(/"|'/g, '')}`;
-        throw error;
+    } catch (errorCausedBy) {
+        error(errorCausedBy);
+        executionDescription = `Execution failed: ${errorCausedBy.stack.replace(/"|'/g, '')}`;
+        throw errorCausedBy;
     } finally {
         if (service) {
             await service.createAEMRendition(rendition.path);

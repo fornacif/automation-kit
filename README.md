@@ -34,5 +34,5 @@ The INDD Banners Automation system automates the creation of banner variations b
 
 The Product Crop feature provides intelligent image cropping capabilities through AI-powered subject detection, ensuring the product remains perfectly centered and prominent in all generated renditions. The system automatically generates a new asset rendition with generated visual.
 
-1. TODO: Product Crop Automation (Self hosted)
-2. TODO: Product Crop Automation (Shared service)
+1. [Self hosted](https://github.com/fornacif/automation-kit/blob/main/product-crop-automation.md)
+2. [Shared service](https://github.com/fornacif/automation-kit/blob/main/product-crop-automation-shared.md)

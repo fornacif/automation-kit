@@ -3,7 +3,6 @@
 const { worker } = require('@adobe/asset-compute-sdk');
 const aemApiClientLib = require("@adobe/aemcs-api-client-lib");
 const path = require('path');
-const { StorageType, ImageFormatType } = require("@adobe/photoshop-apis");
 const filesLib = require('@adobe/aio-lib-files');
 const { downloadFileConcurrently, uploadFileConcurrently } = require('@adobe/httptransfer');
 const { v4: uuid4 } = require('uuid');
@@ -15,26 +14,29 @@ const DirectBinary = require('@adobe/aem-upload');
 const DAM_ROOT_PATH = '/content/dam/';
 const DEFAULT_EXPIRY_SECONDS = 180;
 const DEFAULT_FILE_PERMISSIONS = 'rwd';
+const FIREFLY_STORAGE_UPLOAD_URL = 'https://firefly-api.adobe.io/v2/storage/image';
+const FIREFLY_GENERATE_SIMILAR_URL = 'https://firefly-api.adobe.io/v3/images/generate-similar-async';
 
-class AutomationService {
+class FireflyGenerateSimilarService {
     constructor() {
         this.aemAuthorHost = null;
         this.aemAccessToken = null;
         this.assetOwnerId = null;
-        this.outputFormatType = null;
-        this.paddingWidth = null;
-        this.paddingHeight = null;
+        this.assetPath = null;
         this.automationRelativePath = null;
         this.directBinaryAccess = null;
         this.fireflyServicesClientId = null;
         this.fireflyServicesToken = null;
         this.files = null;
-        this.createAsset = false;
+        this.outputFormatType = null;
+        this.numVariations = 1;
+        this.imageWidth = null;
+        this.imageHeight = null;
         this.renditionContent = '';
     }
 
-    static async create(rendition, params) { 
-        const service = new AutomationService();
+    static async create(rendition, params) {
+        const service = new FireflyGenerateSimilarService();
         await service.initialize(rendition, params);
         return service;
     }
@@ -49,12 +51,11 @@ class AutomationService {
         const { 'jcr:createdBy': ownerId }  = await this.executeAEMRequest('GET', 'application/json', 'json', `${this.assetPath}.json`);
         this.assetOwnerId = ownerId;
         this.automationRelativePath = path.dirname(this.assetPath).replace(DAM_ROOT_PATH, '');
-        this.outputFormatType = rendition.instructions.outputFormatType;
-        this.paddingWidth = rendition.instructions.paddingWidth ? parseInt(rendition.instructions.paddingWidth, 10) : 0;
-        this.paddingHeight = rendition.instructions.paddingHeight ? parseInt(rendition.instructions.paddingHeight, 10) : 0;
-        this.imageWidth = rendition.instructions.imageWidth ? parseInt(rendition.instructions.imageWidth, 10) : null;
+        this.outputFormatType = rendition.instructions.outputFormatType || 'image/png';
         this.directBinaryAccess = rendition.instructions.directBinaryAccess === 'true';
-        this.createAsset = rendition.instructions.createAsset === 'true';
+        this.numVariations = rendition.instructions.numVariations ? parseInt(rendition.instructions.numVariations, 10) : 1;
+        this.imageWidth = rendition.instructions.imageWidth ? parseInt(rendition.instructions.imageWidth, 10) : 2688;
+        this.imageHeight = rendition.instructions.imageHeight ? parseInt(rendition.instructions.imageHeight, 10) : 1536;
         this.files = await filesLib.init();
     }
 
@@ -73,7 +74,7 @@ class AutomationService {
                 'grant_type': 'client_credentials',
                 'client_id': params.fireflyServicesApiClientId,
                 'client_secret': params.fireflyServicesApiClientSecret,
-                'scope': 'openid,AdobeID,read_organizations'
+                'scope': 'openid,AdobeID,read_organizations,firefly_api,ff_apis'
                 })
             });
 
@@ -119,54 +120,6 @@ class AutomationService {
     async waitBeforeContinue(time) {
         const delay = ms => new Promise(res => setTimeout(res, ms));
         await delay(time);
-    }
-
-    async fetchResultStatus(url) {
-        const options = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.fireflyServicesToken}`,
-                'x-api-key': this.fireflyServicesClientId
-            }
-        };
-      
-        const response = await fetch(url, options)
-        
-        if (response.ok) {     
-            const resultStatus = await response.json();
-            if (['pending', 'starting', 'running'].includes(resultStatus.outputs[0].status)) {
-                await this.waitBeforeContinue(1000);
-                return await this.fetchResultStatus(url);
-            } else {
-                return resultStatus.outputs[0];
-            }
-        } else {
-            throw new Error(`Error fetching result status: ${response.statusText}`);
-        }
-    }
-
-    createPhotoshopInput(externalUrl) {
-        return {
-            href: externalUrl,
-            storage: StorageType.EXTERNAL
-        };
-    }
-
-    createPhotoshopOutput(externalUrl, formatType, artboardName = null) {
-        const output = {
-            href: externalUrl,
-            storage: StorageType.EXTERNAL,
-            type: formatType
-        };
-
-        if (formatType === ImageFormatType.IMAGE_PNG) {
-            output.compression = 'large';
-        } else if (formatType === ImageFormatType.IMAGE_JPEG) {
-            output.quality = 7;
-        }
-
-        return output;
     }
 
     async getAssetPresignedUrl(assetPath) {
@@ -241,109 +194,150 @@ class AutomationService {
         }
     }
 
-    async productCrop(inputUrl, outputUrl, width, height) {
-        const photoshopOptions = {
-            unit: 'Pixels',
-            width: width,
-            height: height
-        };
+    async uploadImageToFireflyStorage(imageUrl) {
+        // Download the image from AEM
+        const generatedId = uuid4();
+        const filePath = `${generatedId}/temp`;
 
-        const productCropResponse = await fetch('https://image.adobe.io/pie/psdService/productCrop', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${this.fireflyServicesToken}`,
-                'x-api-key': this.fireflyServicesClientId,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                inputs: [this.createPhotoshopInput(inputUrl)],
-                options: photoshopOptions,
-                outputs: [this.createPhotoshopOutput(outputUrl, this.outputFormatType)]
-            })
-        });
+        try {
+            await downloadFileConcurrently(imageUrl, filePath, { mkdirs: true });
 
-        if (!productCropResponse.ok) {
-            throw new Error(`Product Crop failed: ${productCropResponse.statusText}`);
+            // Read the image file
+            const imageBuffer = fs.readFileSync(filePath);
+
+            // Upload to Firefly storage
+            const response = await fetch(FIREFLY_STORAGE_UPLOAD_URL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${this.fireflyServicesToken}`,
+                    'x-api-key': this.fireflyServicesClientId,
+                    'Content-Type': 'image/jpeg'
+                },
+                body: imageBuffer
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to upload image to Firefly storage: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            return result.images[0].id;
+        } finally {
+            await this.files.delete(`${generatedId}/`);
         }
-
-        const productCropResult = await productCropResponse.json();
-        await this.fetchResultStatus(productCropResult['_links'].self.href);
     }
 
-    async resize(inputUrl, outputUrl, imageWidth) {
-        const output = this.createPhotoshopOutput(outputUrl, this.outputFormatType);
-        output.width = imageWidth;
-
-        const renditionCreateResponse = await fetch('https://image.adobe.io/pie/psdService/renditionCreate', {
+    async generateSimilarImages(uploadId) {
+        const response = await fetch(FIREFLY_GENERATE_SIMILAR_URL, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${this.fireflyServicesToken}`,
                 'x-api-key': this.fireflyServicesClientId,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'x-model-version': 'image4_ultra'
             },
             body: JSON.stringify({
-                inputs: [this.createPhotoshopInput(inputUrl)],
-                outputs: [output]
+                image: {
+                    source: {
+                        uploadId: uploadId
+                    }
+                },
+                numVariations: this.numVariations,
+                size: {
+                    height: this.imageHeight,
+                    width: this.imageWidth
+                }
             })
         });
 
-        if (!renditionCreateResponse.ok) {
-            throw new Error(`Resize to ${imageWidth}x${imageWidth} failed: ${renditionCreateResponse.statusText}`);
+        if (!response.ok) {
+            throw new Error(`Failed to generate similar images: ${response.statusText}`);
         }
 
-        const renditionCreateResult = await renditionCreateResponse.json();
-        await this.fetchResultStatus(renditionCreateResult['_links'].self.href);
+        return await response.json();
+    }
+
+    async pollForResults(statusUrl) {
+        while (true) {
+            const response = await fetch(statusUrl, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${this.fireflyServicesToken}`,
+                    'x-api-key': this.fireflyServicesClientId
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to get job status: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+
+            if (result.status === 'succeeded') {
+                return result.result.outputs;
+            } else if (result.status === 'failed') {
+                throw new Error(`Image generation failed: ${result.error?.message || 'Unknown error'}`);
+            }
+
+            // Wait 2 seconds before polling again
+            await this.waitBeforeContinue(2000);
+        }
     }
 
     async executeAutomation(rendition) {
-        const inputUrl = await this.getAssetPresignedUrl(this.assetPath);
-
-        const tempId = uuid4();
-        const outputUrl = await this.files.generatePresignURL(tempId, {
-            expiryInSeconds: DEFAULT_EXPIRY_SECONDS,
-            permissions: DEFAULT_FILE_PERMISSIONS
-        });
-
-        this.renditionContent = `---- Product Crop Automation ----\n`;
+        this.renditionContent = `---- Firefly Generate Similar ----\n`;
         this.renditionContent += `Asset Path: ${this.assetPath}\n`;
         this.renditionContent += `Output Format: ${this.outputFormatType}\n`;
-        if (this.paddingWidth > 0 && this.paddingHeight > 0) {
-            this.renditionContent += `Padding: ${this.paddingWidth}x${this.paddingHeight}\n`;
-        }
-        if (this.imageWidth) {
-            this.renditionContent += `Final Size: ${this.imageWidth}\n`;
-        }
-        this.renditionContent += `Create Asset: ${this.createAsset}\n`;
+        this.renditionContent += `Num Variations: ${this.numVariations}\n`;
+        this.renditionContent += `Image Size: ${this.imageWidth}x${this.imageHeight}\n`;
 
-        // Step 1: Product crop to paddingWidth x paddingHeight
-        await this.productCrop(inputUrl, outputUrl, this.paddingWidth, this.paddingHeight);
-        
-        let finalOutputUrl = outputUrl;
+        // Step 1: Get the source image URL
+        const sourceImageUrl = await this.getAssetPresignedUrl(this.assetPath);
+        this.renditionContent += `\nSource Image: ${this.assetPath}`;
 
-        // Step 2: Resize to imageWidth (if specified)
-        if (this.imageWidth) {
-            const resizeTempId = uuid4();
-            const resizedOutputUrl = await this.files.generatePresignURL(resizeTempId, {
-                expiryInSeconds: DEFAULT_EXPIRY_SECONDS,
-                permissions: DEFAULT_FILE_PERMISSIONS
-            });
+        // Step 2: Upload image to Firefly storage
+        const uploadId = await this.uploadImageToFireflyStorage(sourceImageUrl);
+        this.renditionContent += `\nFirefly Upload ID: ${uploadId}`;
 
-            await this.resize(outputUrl, resizedOutputUrl, this.imageWidth);
-            finalOutputUrl = resizedOutputUrl;
-        }
+        // Step 3: Generate similar images
+        const generateResult = await this.generateSimilarImages(uploadId);
+        const statusUrl = generateResult.statusUrl;
+        this.renditionContent += `\nStatus URL: ${statusUrl}`;
 
-        // Step 3: Create asset or rendition based on config
-        if (this.createAsset) {
-            const assetBasename = path.basename(this.assetPath, path.extname(this.assetPath));
-            const fileExtension = this.outputFormatType === ImageFormatType.IMAGE_PNG ? 'png' : 'jpeg';
-            const newAssetName = `${assetBasename}-product-crop.${fileExtension}`;
-            const outputFolderPath = `${DAM_ROOT_PATH}${this.automationRelativePath}`;
+        // Step 4: Poll for results
+        const outputs = await this.pollForResults(statusUrl);
+        this.renditionContent += `\nGenerated ${outputs.length} variation(s)`;
 
-            await this.uploadFileToAEM(finalOutputUrl, outputFolderPath, newAssetName);
-            this.renditionContent += `\nNew Asset Created: ${outputFolderPath}/${newAssetName}`;
-        } else {
-            await downloadFileConcurrently(finalOutputUrl, rendition.path);
-            this.renditionContent += `\nRendition Created: ${rendition.path}`;
+        // Step 5: Download and upload to AEM
+        const assetBasename = path.basename(this.assetPath, path.extname(this.assetPath));
+        const outputFolderPath = `${DAM_ROOT_PATH}${this.automationRelativePath}`;
+        const fileExtension = this.outputFormatType === 'image/png' ? 'png' : 'jpeg';
+
+        for (let i = 0; i < outputs.length; i++) {
+            const output = outputs[i];
+            const imageUrl = output.image.url;
+
+            const newAssetName = `${assetBasename}-similar-${i + 1}.${fileExtension}`;
+
+            // Download from Firefly and upload to AEM
+            const generatedId = uuid4();
+            const tempFilePath = `${generatedId}/temp.${fileExtension}`;
+
+            try {
+                await downloadFileConcurrently(imageUrl, tempFilePath, { mkdirs: true });
+
+                const presignedUrl = await this.files.generatePresignURL(generatedId, {
+                    expiryInSeconds: DEFAULT_EXPIRY_SECONDS,
+                    permissions: DEFAULT_FILE_PERMISSIONS
+                });
+
+                await uploadFileConcurrently(tempFilePath, presignedUrl);
+                await this.uploadFileToAEM(presignedUrl, outputFolderPath, newAssetName);
+
+                this.renditionContent += `\nNew Asset Created: ${outputFolderPath}/${newAssetName}`;
+            } finally {
+                await this.files.delete(`${generatedId}/`);
+            }
         }
     }
 
@@ -371,7 +365,7 @@ exports.main = worker(async (source, rendition, params) => {
     const startTime = performance.now();
 
     try {
-        service = await AutomationService.create(rendition, params);
+        service = await FireflyGenerateSimilarService.create(rendition, params);
         await service.executeAutomation(rendition);
 
         const durationSeconds = Math.round((performance.now() - startTime) / 1000);
@@ -382,11 +376,8 @@ exports.main = worker(async (source, rendition, params) => {
         throw errorCausedBy;
     } finally {
         if (service) {
-            // If createAsset mode, write text rendition with info
-            if (service.createAsset) {
-                await service.createAEMRendition(rendition.path);
-            }
-            await service.createAEMTask('Product Crop Automation', executionDescription);
+            await service.createAEMRendition(rendition.path);
+            await service.createAEMTask('Firefly Generate Similar', executionDescription);
         }
     }
 });

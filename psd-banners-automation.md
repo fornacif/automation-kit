@@ -138,7 +138,7 @@ The deployment will provide you with a web action URL that will be used in the A
 Download the sample assets containing:
 - Sample PSD template (`samples/psd-banners-automation/template.psd`)
 - Sample images and fonts (`samples/psd-banners-automation/inputs`)
-- Sample texts (`samples/psd-banners-automation/inputs/texts.csv`)
+- Sample texts (`samples/psd-banners-automation/inputs/texts.csv` or `samples/psd-banners-automation/inputs/texts.xlsx`)
 
 Sample assets can be found in the [samples/psd-banners-automation](https://github.com/fornacif/automation-kit/tree/main/samples/psd-banners-automation) directory of this repository.
 
@@ -170,7 +170,7 @@ The layer names in your PSD template must follow these rules:
 
 ### Text Content Structure
 
-The `texts.csv` file contains the text content for different variants and languages. Each value must be enclosed in double quotes to ensure proper CSV formatting. The structure is:
+The text content for different variants and languages can be provided in either CSV (`.csv`) or Excel (`.xlsx`) format. For CSV files, each value must be enclosed in double quotes to ensure proper CSV formatting. The structure is:
 
 ```csv
 variation,lang,title,text,website
