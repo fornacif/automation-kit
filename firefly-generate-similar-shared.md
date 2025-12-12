@@ -3,7 +3,6 @@
 ## Prerequisites
 
 - AEM as a Cloud Service instance
-- Dynamic Media or Dynamic Media with Open API
 
 ## AEM Certificate Setup
 

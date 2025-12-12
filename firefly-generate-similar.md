@@ -5,7 +5,6 @@
 - Adobe Developer Console access
 - App Builder
 - AEM as a Cloud Service instance
-- Dynamic Media or Dynamic Media with Open API
 - Firefly Services API access (credentials)
 - Node.js 18+ installed
 - Adobe I/O CLI installed (`npm install -g @adobe/aio-cli`)
