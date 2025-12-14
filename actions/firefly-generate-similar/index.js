@@ -321,14 +321,12 @@ class FireflyGenerateSimilarService {
         const outputs = await this.pollForResults(statusUrl);
         this.renditionContent += `\nGenerated ${outputs.length} variation(s)`;
 
-        // Step 5: Download and upload to AEM
+        // Step 5: Download and upload to AEM (parallelized)
         const assetBasename = path.basename(this.assetPath, path.extname(this.assetPath));
         const outputFolderPath = `${DAM_ROOT_PATH}${this.automationRelativePath}`;
 
-        for (let i = 0; i < outputs.length; i++) {
-            const output = outputs[i];
+        const uploadPromises = outputs.map(async (output, i) => {
             const imageUrl = output.image.url;
-
             const newAssetName = `${assetBasename}-similar-${i + 1}.${fileFormat.extension}`;
 
             // Download from Firefly and upload to AEM
@@ -346,11 +344,14 @@ class FireflyGenerateSimilarService {
                 await uploadFileConcurrently(tempFilePath, presignedUrl);
                 await this.uploadFileToAEM(presignedUrl, outputFolderPath, newAssetName);
 
-                this.renditionContent += `\nNew Asset Created: ${outputFolderPath}/${newAssetName}`;
+                return `\nNew Asset Created: ${outputFolderPath}/${newAssetName}`;
             } finally {
                 await this.files.delete(`${generatedId}/`);
             }
-        }
+        });
+
+        const results = await Promise.all(uploadPromises);
+        this.renditionContent += results.join('');
     }
 
     async createAEMRendition(path) {
