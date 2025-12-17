@@ -96,7 +96,7 @@ The Firefly Available Voices Automation uses Adobe Firefly Services API to:
    - Supported locales and languages
    - Voice characteristics (gender, age, style)
 4. **JSON Generation**: Creates a structured JSON file with all voice data
-5. **Asset Creation**: Saves the voice listing as a JSON asset in AEM
+5. **Task Creation**: Prints the voice IDs in the AEM task created for easy reference
 
 This provides a reference catalog of available voices that can be used to select appropriate voice IDs for text-to-speech automation.
 

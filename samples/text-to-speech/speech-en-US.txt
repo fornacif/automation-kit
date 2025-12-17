@@ -1,0 +1,1 @@
+Firefly Services API enables developers to programmatically access Adobe's generative AI capabilities for creative workflows. Through simple REST calls, you can generate images from text prompts, expand image boundaries with generative fill, remove or replace backgrounds, and apply style references to maintain brand consistency. 

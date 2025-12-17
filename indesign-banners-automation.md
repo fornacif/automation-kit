@@ -34,11 +34,11 @@ See the [Shared Setup Guide - App Configuration](shared-setup.md#4-app-configura
 **Applies to:** Both self-hosted and shared service
 
 Download the sample assets containing:
-- Sample InDesign templates (`samples/indd-banners-automation/1080x1080.indd`, `samples/indd-banners-automation/800x1080.indd`)
-- Sample images (`samples/indd-banners-automation/inputs`)
-- Sample data (`samples/indd-banners-automation/inputs/data.csv`)
+- Sample InDesign templates (`samples/indesign-banners-automation/1080x1080.indd`, `samples/indesign-banners-automation/800x1080.indd`)
+- Sample images (`samples/indesign-banners-automation/inputs`)
+- Sample data (`samples/indesign-banners-automation/inputs/data.csv`)
 
-Sample assets can be found in the [samples/indd-banners-automation](https://github.com/fornacif/automation-kit/tree/main/samples/indd-banners-automation) directory of this repository.
+Sample assets can be found in the [samples/indesign-banners-automation](https://github.com/fornacif/automation-kit/tree/main/samples/indesign-banners-automation) directory of this repository.
 
 ### Image and Element Naming Convention
 
@@ -99,7 +99,7 @@ The following parameters can be configured in your AEM Processing Profile:
 | Parameter | Type | Required | Deployment | Default | Description |
 |-----------|------|----------|------------|---------|-------------|
 | `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from the [Shared Setup Guide - AEM Certificate Setup](shared-setup.md#aem-certificate-setup) |
-| `actionName` | string | **Yes** | Both | - | Must be set to `indd-banners-automation` |
+| `actionName` | string | **Yes** | Both | - | Must be set to `indesign-banners-automation` |
 | `outputFormatType` | string | No | Both | `application/pdf` | Output format. Values: `application/pdf`, `image/jpeg`, `image/png` |
 | `resolution` | number | No | Both | `300` | Resolution in DPI. Recommended: 300 for print, 72-150 for web |
 

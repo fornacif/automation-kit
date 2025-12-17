@@ -54,8 +54,6 @@ The following parameters can be configured in your AEM Processing Profile:
 | `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from the [Shared Setup Guide - AEM Certificate Setup](shared-setup.md#aem-certificate-setup) |
 | `actionName` | string | **Yes** | Both | - | Must be set to `firefly-text-to-speech` |
 | `voiceId` | string | **Yes** | Both | - | The voice ID to use for speech synthesis. Use the Firefly Available Voices action to retrieve valid voice IDs |
-| `speed` | number | No | Both | `1.0` | Speech rate multiplier. Range: 0.5-2.0. Values < 1.0 slow down speech, > 1.0 speed it up |
-| `pitch` | number | No | Both | `1.0` | Voice pitch multiplier. Range: 0.5-2.0. Values < 1.0 lower pitch, > 1.0 raise pitch |
 | `outputFormat` | string | No | Both | `audio/mpeg` | Audio output format. Values: `audio/mpeg` (MP3), `audio/wav` (WAV) |
 
 **Example Configuration (Self-hosted):**
@@ -63,8 +61,6 @@ The following parameters can be configured in your AEM Processing Profile:
 Service Parameters:
 - actionName: firefly-text-to-speech
 - voiceId: en-US-Neural-Voice-1
-- speed: 1.0
-- pitch: 1.0
 - outputFormat: audio/mpeg
 ```
 
@@ -74,8 +70,6 @@ Service Parameters:
 - certificate: {YOUR_AEM_CERTIFICATE_JSON}
 - actionName: firefly-text-to-speech
 - voiceId: en-US-Neural-Voice-1
-- speed: 1.0
-- pitch: 1.0
 - outputFormat: audio/mpeg
 ```
 
@@ -104,7 +98,6 @@ The Firefly Text to Speech Automation uses Adobe Firefly Services API to:
 3. **AI Synthesis**: Firefly's text-to-speech engine converts text to natural-sounding speech using:
    - Neural voice models for realistic intonation
    - Proper pronunciation and prosody
-   - Adjustable speed and pitch parameters
 4. **Audio Generation**: Creates high-quality audio files in the specified format
 5. **Asset Creation**: Downloads the generated audio and creates new audio assets in AEM
 
@@ -140,7 +133,6 @@ For common troubleshooting steps, see the [Shared Setup Guide - Common Troublesh
 
 2. **Audio Quality Issues**
    - Ensure source text is properly formatted (no excessive special characters)
-   - Try adjusting `speed` and `pitch` parameters for better results
    - Consider using different voices for different content types
    - Verify the output format is appropriate for your use case
 
@@ -156,13 +148,7 @@ For common troubleshooting steps, see the [Shared Setup Guide - Common Troublesh
    - Check Firefly Services API documentation for character limits
    - Monitor processing time for long texts
 
-5. **Speed and Pitch Issues**
-   - Speed range is 0.5 to 2.0 (default 1.0)
-   - Pitch range is 0.5 to 2.0 (default 1.0)
-   - Extreme values may affect audio quality
-   - Test different values to find optimal settings
-
-6. **Output Format Issues**
+5. **Output Format Issues**
    - Verify outputFormat matches the rendition extension
    - Use `audio/mpeg` for MP3 files
    - Use `audio/wav` for WAV files

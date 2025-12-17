@@ -32,11 +32,11 @@ See the [Shared Setup Guide - App Configuration](shared-setup.md#4-app-configura
 **Applies to:** Both self-hosted and shared service
 
 Download the sample assets containing:
-- Sample PSD template (`samples/psd-banners-automation/template.psd`)
-- Sample images and fonts (`samples/psd-banners-automation/inputs`)
-- Sample texts (`samples/psd-banners-automation/inputs/texts.csv` or `samples/psd-banners-automation/inputs/texts.xlsx`)
+- Sample photoshop template (`samples/photoshop-banners-automation/template.psd`)
+- Sample images and fonts (`samples/photoshop-banners-automation/inputs`)
+- Sample texts (`samples/photoshop-banners-automation/inputs/texts.csv` or `samples/photoshop-banners-automation/inputs/texts.xlsx`)
 
-Sample assets can be found in the [samples/psd-banners-automation](https://github.com/fornacif/automation-kit/tree/main/samples/psd-banners-automation) directory of this repository.
+Sample assets can be found in the [samples/photoshop-banners-automation](https://github.com/fornacif/automation-kit/tree/main/samples/photoshop-banners-automation) directory of this repository.
 
 ### Image and Layer Naming Convention
 
@@ -52,7 +52,7 @@ summer_sale--product_shot.png
 ```
 
 #### PSD Layer Names
-The layer names in your PSD template must follow these rules:
+The layer names in your Photoshop template must follow these rules:
 
 1. **Image Layers**: The layer name must exactly match the `layer_image_name` part of your image filename:
    ```
@@ -126,13 +126,13 @@ The following parameters can be configured in your AEM Processing Profile:
 | Parameter | Type | Required | Deployment | Default | Description |
 |-----------|------|----------|------------|---------|-------------|
 | `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from the [Shared Setup Guide - AEM Certificate Setup](shared-setup.md#aem-certificate-setup) |
-| `actionName` | string | **Yes** | Both | - | Must be set to `psd-banners-automation` |
+| `actionName` | string | **Yes** | Both | - | Must be set to `photoshop-banners-automation` |
 | `outputFormatType` | string | No | Both | - | Output format. Values: `image/jpeg`, `image/png` |
 
 **Example Configuration (Self-hosted):**
 ```yaml
 Service Parameters:
-- actionName: psd-banners-automation
+- actionName: photoshop-banners-automation
 - outputFormatType: image/jpeg
 ```
 
@@ -140,7 +140,7 @@ Service Parameters:
 ```yaml
 Service Parameters:
 - certificate: {YOUR_AEM_CERTIFICATE_JSON}
-- actionName: psd-banners-automation
+- actionName: photoshop-banners-automation
 - outputFormatType: image/jpeg
 ```
 
