@@ -27,6 +27,33 @@ For self-hosted deployments, implement the action using:
 
 See the [Shared Setup Guide - App Configuration](shared-setup.md#4-app-configuration) for the unified `app.config.yaml` configuration.
 
+## Sample Assets
+
+**Applies to:** Both self-hosted and shared service
+
+Sample text files can be found in the [samples/text-to-speech](https://github.com/fornacif/automation-kit/tree/main/samples/text-to-speech) directory of this repository.
+
+### File Naming Convention
+
+**IMPORTANT:** Text files must follow a specific naming pattern to specify the locale for speech synthesis:
+
+```
+speech-{locale}.txt
+```
+
+**Examples:**
+- `speech-fr-FR.txt` - French (France)
+- `speech-en-US.txt` - English (United States)
+- `speech-es-ES.txt` - Spanish (Spain)
+- `speech-de-DE.txt` - German (Germany)
+- `speech-it-IT.txt` - Italian (Italy)
+
+**Key Points:**
+- The filename **must** start with `speech-`
+- The locale code (e.g., `fr-FR`, `en-US`) is extracted from the filename
+- The locale determines which voice characteristics are appropriate
+- The file extension must be `.txt`
+
 ## AEM Configuration
 
 **Applies to:** Both self-hosted and shared service
@@ -77,7 +104,7 @@ Service Parameters:
 
 1. Create a new folder in AEM Assets
 2. Apply the "Firefly Text to Speech" processing profile to the folder
-3. Upload your text files (`.txt` or other text-based formats) to the folder
+3. Upload your text files following the naming convention `speech-{locale}.txt` (e.g., `speech-en-US.txt`, `speech-fr-FR.txt`)
 4. The automation will automatically:
    - Read the text content from the source file
    - Send the text to Firefly Services text-to-speech API
@@ -136,19 +163,25 @@ For common troubleshooting steps, see the [Shared Setup Guide - Common Troublesh
    - Consider using different voices for different content types
    - Verify the output format is appropriate for your use case
 
-3. **Text Processing Issues**
-   - Verify text files are in supported formats (plain text, HTML)
+3. **File Naming Issues**
+   - Ensure files follow the naming pattern `speech-{locale}.txt`
+   - Verify the locale code is valid (e.g., `en-US`, `fr-FR`)
+   - Check that the locale matches the voiceId being used
+   - File must have `.txt` extension
+
+4. **Text Processing Issues**
+   - Verify text files are in plain text format
    - Check file encoding (UTF-8 recommended)
    - Ensure text is readable and not corrupted
    - Remove or escape special characters that might cause issues
 
-4. **Text Length Issues**
+5. **Text Length Issues**
    - Very long text files may hit API limits
    - Consider splitting large documents into smaller sections
    - Check Firefly Services API documentation for character limits
    - Monitor processing time for long texts
 
-5. **Output Format Issues**
+6. **Output Format Issues**
    - Verify outputFormat matches the rendition extension
    - Use `audio/mpeg` for MP3 files
    - Use `audio/wav` for WAV files
