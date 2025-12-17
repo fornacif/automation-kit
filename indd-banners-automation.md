@@ -191,7 +191,8 @@ Where:
    - `inputs` as Rendition Name and `json` as extension
    - **Endpoint URL:**
      - **Self-hosted:** Use the deployed web action URL from the [deployment step](#5-deployment)
-     - **Shared service:** Contact me for accessing the URL
+     - **Shared service:** `https://85792-608blackantelope-stage.adobeioruntime.net/api/v1/web/demo-kit.processing-profiles/firefly-services`
+       - **Note:** You must share your AEM Organization ID with me to authorize access to this shared service
    - Service Parameters (see below for details)
    - Set `application/vnd.adobe.indesign` for included Mime Type
 
@@ -202,6 +203,7 @@ The following parameters can be configured in your AEM Processing Profile:
 | Parameter | Type | Required | Deployment | Default | Description |
 |-----------|------|----------|------------|---------|-------------|
 | `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from [AEM Certificate Setup](#aem-certificate-setup) |
+| `actionName` | string | **Yes** | Shared service only | - | Must be set to `indd-banners-automation` |
 | `outputFormatType` | string | No | Both | `application/pdf` | Output format. Values: `application/pdf`, `image/jpeg`, `image/png` |
 | `resolution` | number | No | Both | `300` | Resolution in DPI. Recommended: 300 for print, 72-150 for web |
 
@@ -216,6 +218,7 @@ Service Parameters:
 ```yaml
 Service Parameters:
 - certificate: {YOUR_AEM_CERTIFICATE_JSON}
+- actionName: indd-banners-automation
 - outputFormatType: application/pdf
 - resolution: 300
 ```

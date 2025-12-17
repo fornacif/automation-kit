@@ -146,7 +146,8 @@ Once created, the technical account needs appropriate permissions in AEM:
    - `product-crop` as Rendition Name and `jpg` or `png` as extension (based on your output format)
    - **Endpoint URL:**
      - **Self-hosted:** Use the deployed web action URL from the [deployment step](#5-deployment)
-     - **Shared service:** Contact me for accessing the URL
+     - **Shared service:** `https://85792-608blackantelope-stage.adobeioruntime.net/api/v1/web/demo-kit.processing-profiles/firefly-services`
+       - **Note:** You must share your AEM Organization ID with me to authorize access to this shared service
    - Service Parameters (see below for details)
    - Set appropriate Mime Types for included images (e.g., `image/jpeg`, `image/png`)
 
@@ -157,6 +158,7 @@ The following parameters can be configured in your AEM Processing Profile:
 | Parameter | Type | Required | Deployment | Default | Description |
 |-----------|------|----------|------------|---------|-------------|
 | `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from [AEM Certificate Setup](#aem-certificate-setup) |
+| `actionName` | string | **Yes** | Shared service only | - | Must be set to `product-crop-automation` |
 | `createAsset` | boolean | No | Both | `true` | Creates a new asset in AEM with the cropped image or creates a rendition of the original asset if set to false |
 | `outputFormatType` | string | No | Both | `image/jpeg` | Output format. Values: `image/jpeg`, `image/png` |
 | `paddingWidth` | number | No | Both | `50` | Horizontal padding in pixels to add around the detected subject |
@@ -177,6 +179,7 @@ Service Parameters:
 ```yaml
 Service Parameters:
 - certificate: {YOUR_AEM_CERTIFICATE_JSON}
+- actionName: product-crop-automation
 - createAsset: true
 - outputFormatType: image/jpeg
 - paddingWidth: 50
