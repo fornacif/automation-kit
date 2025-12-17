@@ -23,7 +23,7 @@ This document covers only the **InDesign Banners Automation** specific configura
 For self-hosted deployments, implement the action using:
 - **File:** [actions/firefly-services/index.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/index.js)
 - **Action Name:** `firefly-services` (unified action in app.config.yaml)
-- **Action Identifier:** `indd-banners-automation` (passed via `actionName` parameter)
+- **Action Identifier:** `indesign-banners-automation` (passed via `actionName` parameter)
 
 **Note:** This action requires InDesign Firefly Services API credentials. See the [Shared Setup Guide - Environment Configuration](shared-setup.md#3-environment-configuration) for InDesign-specific environment variables.
 

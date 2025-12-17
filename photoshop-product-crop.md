@@ -23,7 +23,7 @@ This document covers only the **Photoshop Product Crop** specific configuration 
 For self-hosted deployments, implement the action using:
 - **File:** [actions/firefly-services/index.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/index.js)
 - **Action Name:** `firefly-services` (unified action in app.config.yaml)
-- **Action Identifier:** `product-crop-automation` (passed via `actionName` parameter)
+- **Action Identifier:** `photoshop-product-crop` (passed via `actionName` parameter)
 
 See the [Shared Setup Guide - App Configuration](shared-setup.md#4-app-configuration) for the unified `app.config.yaml` configuration.
 
