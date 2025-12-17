@@ -5,7 +5,7 @@
 This Automation Kit provides a comprehensive solution for automating content creation using various Adobe services, making it an ideal demonstration tool to showcase Content Automation capabilities aligned with the Content Supply Chain play.
 
 The kit demonstrates how organizations can transform their content creation workflow through:
-- Adobe Firefly Services API for Photoshop-powered or InDesign-powered creative operations, automated content generation and manipulation
+- Adobe Firefly Services API for Photoshop-powered or InDesign-powered creative operations, AI-powered image generation (Generate Similar), text-to-speech audio synthesis, and automated content manipulation
 - Adobe Substance 3D API for automated 3D model rendering and visualization
 - AEM Assets for digital asset management, showcasing enterprise-scale content organization and workflow automation
 - Dynamic Media for rich media delivery and Smart Cropping features, demonstrating automated responsive design capabilities
