@@ -2,70 +2,24 @@ application:
   actions: actions
   runtimeManifest:
     packages:
-      demo-kit.processing-profiles:
+      automation-kit:
         license: Apache-2.0
         actions:
-          psd-banners-automation:
-            function: actions/psd-banners-automation/index.js
+          firefly-services:
+            function: actions/firefly-services/index.js
             web: 'yes'
             runtime: nodejs:18
             limits:
               memorySize: 1024
               concurrency: 10
-              timeout: 600000
+              timeout: 300000
             inputs:
               LOG_LEVEL: info
               fireflyServicesApiClientId: $FIREFLY_SERVICES_API_CLIENT_ID
               fireflyServicesApiClientSecret: $FIREFLY_SERVICES_API_CLIENT_SECRET
               fireflyServicesApiScopes: $FIREFLY_SERVICES_API_SCOPES
-              aemCertificate: $AEM_CERTIFICATE
-            annotations:
-              require-adobe-auth: true
-          indd-banners-automation:
-            function: actions/indd-banners-automation/index.js
-            web: 'yes'
-            runtime: nodejs:18
-            limits:
-              memorySize: 512
-              concurrency: 10
-              timeout: 600000
-            inputs:
-              LOG_LEVEL: info
               inDesignFireflyServicesApiClientId: $INDESIGN_FIREFLY_SERVICES_API_CLIENT_ID
               inDesignFireflyServicesApiClientSecret: $INDESIGN_FIREFLY_SERVICES_API_CLIENT_SECRET
               inDesignFireflyServicesApiScopes: $INDESIGN_FIREFLY_SERVICES_API_SCOPES
-              aemCertificate: $AEM_CERTIFICATE
             annotations:
               require-adobe-auth: true
-          product-crop-automation:
-            function: actions/product-crop-automation/index.js
-            web: 'yes'
-            runtime: nodejs:18
-            limits:
-              memorySize: 512
-              concurrency: 10
-              timeout: 600000
-            inputs:
-              LOG_LEVEL: info
-              fireflyServicesApiClientId: $FIREFLY_SERVICES_API_CLIENT_ID
-              fireflyServicesApiClientSecret: $FIREFLY_SERVICES_API_CLIENT_SECRET
-              fireflyServicesApiScopes: $FIREFLY_SERVICES_API_SCOPES
-              aemCertificate: $AEM_CERTIFICATE
-            annotations:
-              require-adobe-auth: true
-          firefly-generate-similar:
-              function: actions/firefly-generate-similar/index.js
-              web: 'yes'
-              runtime: nodejs:18
-              limits:
-                memorySize: 512
-                concurrency: 10
-                timeout: 300000
-              inputs:
-                LOG_LEVEL: info
-                fireflyServicesApiClientId: $FIREFLY_SERVICES_API_CLIENT_ID
-                fireflyServicesApiClientSecret: $FIREFLY_SERVICES_API_CLIENT_SECRET
-                fireflyServicesApiScopes: $FIREFLY_SERVICES_API_SCOPES
-                aemCertificate: $AEM_CERTIFICATE
-              annotations:
-                require-adobe-auth: true
