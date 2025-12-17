@@ -1,138 +1,31 @@
 # Firefly Available Voices
 
-The Firefly Available Voices feature retrieves a list of all available voices from Adobe Firefly's text-to-speech service. This automation provides information about voice options including voice IDs, names, locales, and characteristics, enabling you to select the appropriate voice for your text-to-speech automation needs. This document covers both self-hosted and shared service deployment options.
+The Firefly Available Voices feature retrieves a list of all available voices from Adobe Firefly's text-to-speech service. This automation provides information about voice options including voice IDs, names, locales, and characteristics, enabling you to select the appropriate voice for your text-to-speech automation needs.
 
-## Prerequisites
+## Prerequisites & Setup
 
-### Self-hosted
-- Adobe Developer Console access
-- App Builder
-- AEM as a Cloud Service instance
-- Firefly Services API access (credentials)
-- Node.js 18+ installed
-- Adobe I/O CLI installed (`npm install -g @adobe/aio-cli`)
+**For common setup instructions**, including:
+- Prerequisites (self-hosted and shared service)
+- Adobe App Builder project initialization
+- Environment configuration
+- AEM certificate setup
+- Deployment steps
+- Common troubleshooting
 
-### Shared service
-- AEM as a Cloud Service instance
+Please refer to the **[Shared Setup Guide](shared-setup.md)**.
 
-## Self-hosted Setup
+This document covers only the **Firefly Available Voices** specific configuration and usage.
 
-This section applies only to self-hosted deployments.
+## Implementation
 
-### 1. Initialize Adobe App Builder Project
+### Action Code
 
-#### Console Setup
-1. Navigate to [Adobe Developer Console](https://developer.adobe.com/console)
-2. Click "Create new project from template"
-3. Select "App Builder" template
-4. Name your project (e.g., "Firefly Voice Automation")
+For self-hosted deployments, implement the action using:
+- **File:** [actions/firefly-services/firefly-available-voices.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/firefly-available-voices.js)
+- **Action Name:** `firefly-services` (unified action in app.config.yaml)
+- **Action Identifier:** `firefly-available-voices` (passed via `actionName` parameter)
 
-#### Local Project Setup
-1. Create a new directory for your project and navigate to it:
-```bash
-mkdir automation
-cd automation
-```
-
-2. Initialize the App Builder project locally:
-```bash
-aio app init
-```
-
-3. During initialization:
-   - Select your organization when prompted
-   - Choose the App Builder project you created in the Console
-   - Select "No" for adding any optional features
-   - Choose your preferred template when prompted (typically "Basic")
-
-4. After initialization, your project structure will be created with the necessary configuration files
-
-### 2. Setup Action
-
-1. Create a new directory for your action:
-```bash
-cd actions
-mkdir firefly-available-voices
-cd firefly-available-voices
-```
-
-2. Create an `index.js` file with the content from:
-[actions/firefly-available-voices/index.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-available-voices/index.js)
-
-### 3. Environment Configuration
-
-Add the following properties to your `.env` file:
-
-```plaintext
-# This file must not be committed to source control
-
-FIREFLY_SERVICES_API_CLIENT_ID=[REDACTED]
-FIREFLY_SERVICES_API_CLIENT_SECRET=[REDACTED]
-FIREFLY_SERVICES_API_SCOPES=openid,AdobeID,read_organizations,firefly_api,ff_apis
-AEM_CERTIFICATE='{
-  "ok": true,
-  "integration": {
-    COPY YOUR CERTIFICATE HERE FROM THE AEM DEVELOPER CONSOLE
-  },
-  "statusCode": 200
-}'
-```
-
-### 4. App Configuration
-
-Update your `app.config.yaml` with the following:
-
-```yaml
-actions:
-  firefly-available-voices:
-    function: actions/firefly-available-voices/index.js
-    web: 'yes'
-    runtime: nodejs:18
-    limits:
-      memorySize: 512
-      concurrency: 10
-      timeout: 300000
-    inputs:
-      LOG_LEVEL: info
-      fireflyServicesApiClientId: $FIREFLY_SERVICES_API_CLIENT_ID
-      fireflyServicesApiClientSecret: $FIREFLY_SERVICES_API_CLIENT_SECRET
-      fireflyServicesApiScopes: $FIREFLY_SERVICES_API_SCOPES
-      aemCertificate: $AEM_CERTIFICATE
-    annotations:
-      require-adobe-auth: true
-```
-
-More actions can be configured like shown in the [app.config.yaml](https://github.com/fornacif/automation-kit/blob/main/app.config.yaml) present in the repository.
-
-### 5. Deployment
-
-Deploy your application using the Adobe I/O CLI:
-
-```bash
-aio app deploy
-```
-
-The deployment will provide you with a web action URL that will be used in the AEM Processing Profile.
-
-## AEM Certificate Setup
-
-**Applies to:** Both self-hosted and shared service
-
-Before configuring your environment, you need to obtain an AEM certificate:
-
-1. Navigate to your AEM Cloud Service Developer Console
-2. Go to "Integrations"
-3. Click "Create new technical account"
-4. After creation, click "View" to see the certificate
-5. Copy the entire certificate JSON structure
-
-Once created, the technical account needs appropriate permissions in AEM:
-1. Navigate to AEM > Tools > Security > Users
-2. Find the technical account (it will appear after its first use)
-3. Add it to appropriate groups or grant necessary permissions
-   Required permissions include:
-   - Assets management
-   - Task creation
+See the [Shared Setup Guide - App Configuration](shared-setup.md#4-app-configuration) for the unified `app.config.yaml` configuration.
 
 ## AEM Configuration
 
@@ -143,13 +36,14 @@ Once created, the technical account needs appropriate permissions in AEM:
 1. Navigate to AEM Tools > Assets > Processing Profiles
 2. Create a new profile named "Firefly Available Voices"
 3. Add a new Custom Processing Services with the following configuration:
-   - `voices` as Rendition Name and `json` as extension
+   - **Rendition Name:** `voices`
+   - **Extension:** `json`
    - **Endpoint URL:**
-     - **Self-hosted:** Use the deployed web action URL from the [deployment step](#5-deployment)
+     - **Self-hosted:** Use the deployed web action URL from the [Shared Setup Guide - Deployment](shared-setup.md#5-deployment)
      - **Shared service:** `https://85792-608blackantelope-stage.adobeioruntime.net/api/v1/web/demo-kit.processing-profiles/firefly-services`
        - **Note:** You must share your AEM Organization ID with me to authorize access to this shared service
-   - Service Parameters (see below for details)
-   - Set appropriate Mime Types for included assets (e.g., `text/plain`, `application/json`)
+   - **Service Parameters:** See below for details
+   - **Mime Types:** Include `text/plain`, `application/json`
 
 ### Service Parameters
 
@@ -157,7 +51,7 @@ The following parameters can be configured in your AEM Processing Profile:
 
 | Parameter | Type | Required | Deployment | Default | Description |
 |-----------|------|----------|------------|---------|-------------|
-| `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from [AEM Certificate Setup](#aem-certificate-setup) |
+| `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from the [Shared Setup Guide - AEM Certificate Setup](shared-setup.md#aem-certificate-setup) |
 | `actionName` | string | **Yes** | Both | - | Must be set to `firefly-available-voices` |
 | `locale` | string | No | Both | - | Optional locale filter to retrieve voices for specific language/region (e.g., `en-US`, `fr-FR`) |
 
@@ -220,40 +114,29 @@ This provides a reference catalog of available voices that can be used to select
 
 **Applies to:** Both self-hosted and shared service
 
-### Common Issues and Solutions
+For common troubleshooting steps, see the [Shared Setup Guide - Common Troubleshooting](shared-setup.md#common-troubleshooting).
 
-1. **Processing Profile Errors**
-   - Verify the web action URL is correct and accessible
-   - Check Tasks in the AEM Inbox to see if some errors happened
-   - **Self-hosted only:** Check the action logs using:
-     ```bash
-     aio app logs
-     ```
-   - Ensure all required parameters are properly configured
-   - **Shared service only:** Verify the certificate parameter is correctly formatted as JSON
+### Action-Specific Issues
 
-2. **Authentication Issues (Shared service)**
-   - Ensure the AEM certificate is valid and not expired
-   - Verify the technical account has the necessary permissions in AEM
-   - Check that the certificate JSON structure is complete and properly formatted
-
-3. **API Connection Issues**
-   - Verify Firefly Services API credentials are valid
-   - Check network connectivity to Firefly Services
-   - Ensure API quota is not exceeded
-
-4. **Locale Filter Issues**
+1. **Locale Filter Issues**
    - Verify the locale parameter uses the correct format (e.g., `en-US`, not `en`)
    - Check that the requested locale is supported by Firefly Services
+   - Omit locale parameter to retrieve all available voices
+   - Locale is case-sensitive (use proper casing)
+
+2. **Empty Voice List**
+   - Verify API credentials are valid (self-hosted)
+   - Check that Firefly Services API is accessible
+   - Ensure API quota is not exceeded
+   - Try without locale filter to see if any voices are returned
+
+3. **JSON Format Issues**
+   - The output JSON structure is determined by the Firefly API
+   - Verify the JSON is valid before parsing
+   - Check for API version changes that might affect structure
 
 ### Debug Mode (Self-hosted only)
 
-Enable debug logging by:
-1. Setting `LOG_LEVEL=debug` in your `.env` file
-2. Redeploying the application
-3. Monitoring logs during execution:
-   ```bash
-   aio app logs -f
-   ```
+See [Shared Setup Guide - Debug Mode](shared-setup.md#debug-mode-self-hosted-only) for instructions on enabling debug logging.
 
 For additional support, consult the Adobe Developer Documentation.

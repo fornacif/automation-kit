@@ -1,6 +1,6 @@
-# INDD Banners Automation
+# InDesign Banners Automation
 
-The INDD Banners Automation system automates the creation of banner variations by generating new InDesign templates and converting them into print-ready format (PDF) or web-ready image formats (JPEG or PNG). This process streamlines marketing asset production and ensures consistency across all banner variations.
+The InDesign Banners Automation system automates the creation of banner variations by generating new InDesign templates and converting them into print-ready format (PDF) or web-ready image formats (JPEG or PNG). This process streamlines marketing asset production and ensures consistency across all banner variations.
 
 ## Prerequisites & Setup
 
@@ -14,7 +14,7 @@ The INDD Banners Automation system automates the creation of banner variations b
 
 Please refer to the **[Shared Setup Guide](shared-setup.md)**.
 
-This document covers only the **INDD Banners Automation** specific configuration and usage.
+This document covers only the **InDesign Banners Automation** specific configuration and usage.
 
 ## Implementation
 
@@ -81,7 +81,7 @@ Where:
 ### Setup Processing Profile
 
 1. Navigate to AEM Tools > Assets > Processing Profiles
-2. Create a new profile named "INDD Banners Automation"
+2. Create a new profile named "InDesign Banners Automation"
 3. Add a new Custom Processing Services with the following configuration:
    - **Rendition Name:** `inputs`
    - **Extension:** `json`
@@ -128,7 +128,7 @@ Service Parameters:
 4. **(Optional)** Enable Dynamic Media on the `INPUTS` folder (for image optimization)
 5. **(Optional)** If Dynamic Media with Open API is enabled, simply approve the assets once they are uploaded
 6. Upload your assets (images, data file) to the `INPUTS` folder
-7. Trigger manually the "INDD Banners Automation" processing profile to the InDesign file (Reprocess Assets)
+7. Trigger manually the "InDesign Banners Automation" processing profile to the InDesign file (Reprocess Assets)
 8. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
 9. Check that new banners have been created inside the `OUTPUTS` folder
 
@@ -136,7 +136,7 @@ Service Parameters:
 
 **Applies to:** Both self-hosted and shared service
 
-The INDD Banners Automation uses Adobe InDesign Services API to:
+The InDesign Banners Automation uses Adobe InDesign Services API to:
 
 1. **Template Processing**: Reads the InDesign template file
 2. **Data Injection**: Parses the data file (CSV) and maps values to InDesign elements

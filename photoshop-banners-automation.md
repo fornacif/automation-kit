@@ -1,6 +1,6 @@
-# PSD Banners Automation
+# Photoshop Banners Automation
 
-The PSD Banners Automation system automates the creation of banner variations by generating new PSD templates and converting them into web-ready image formats (JPEG or PNG). This process streamlines marketing asset production and ensures consistency across all banner variations.
+The Photoshop Banners Automation system automates the creation of banner variations by generating new PSD templates and converting them into web-ready image formats (JPEG or PNG). This process streamlines marketing asset production and ensures consistency across all banner variations.
 
 ## Prerequisites & Setup
 
@@ -14,7 +14,7 @@ The PSD Banners Automation system automates the creation of banner variations by
 
 Please refer to the **[Shared Setup Guide](shared-setup.md)**.
 
-This document covers only the **PSD Banners Automation** specific configuration and usage.
+This document covers only the **Photoshop Banners Automation** specific configuration and usage.
 
 ## Implementation
 
@@ -108,7 +108,7 @@ Remember that Smart Crop names in this configuration must match the ones used in
 ### Setup Processing Profile
 
 1. Navigate to AEM Tools > Assets > Processing Profiles
-2. Create a new profile named "PSD Banners Automation"
+2. Create a new profile named "Photoshop Banners Automation"
 3. Add a new Custom Processing Services with the following configuration:
    - **Rendition Name:** `inputs`
    - **Extension:** `json`
@@ -153,7 +153,7 @@ Service Parameters:
 5. **(Optional)** Enable Dynamic Media on the `INPUTS` folder (only if using Smart Crop)
 6. **(Optional)** If Dynamic Media with Open API is enabled, simply approve the assets once they are uploaded
 7. Upload your assets (images and fonts) to the `INPUTS` folder
-8. Trigger manually the "PSD Banners Automation" processing profile to the PSD file (Reprocess Assets)
+8. Trigger manually the "Photoshop Banners Automation" processing profile to the PSD file (Reprocess Assets)
 9. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
 10. Check that new banners have been created inside the `OUTPUTS` folder
 
@@ -161,7 +161,7 @@ Service Parameters:
 
 **Applies to:** Both self-hosted and shared service
 
-The PSD Banners Automation uses Adobe Firefly Services API (Photoshop) to:
+The Photoshop Banners Automation uses Adobe Firefly Services API (Photoshop) to:
 
 1. **Template Analysis**: Reads the PSD template and identifies layers
 2. **Input Processing**: Parses text files (CSV/XLSX) and matches images based on naming conventions

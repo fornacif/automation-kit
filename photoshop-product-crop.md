@@ -1,6 +1,6 @@
-# Product Crop Automation
+# Photoshop Product Crop
 
-The Product Crop feature provides intelligent image cropping capabilities through AI-powered subject detection, ensuring the product remains perfectly centered and prominent in all generated renditions. The system automatically generates a new asset rendition with the cropped visual.
+The Photoshop Product Crop feature provides intelligent image cropping capabilities through AI-powered subject detection, ensuring the product remains perfectly centered and prominent in all generated renditions. The system automatically generates a new asset rendition with the cropped visual.
 
 ## Prerequisites & Setup
 
@@ -14,7 +14,7 @@ The Product Crop feature provides intelligent image cropping capabilities throug
 
 Please refer to the **[Shared Setup Guide](shared-setup.md)**.
 
-This document covers only the **Product Crop Automation** specific configuration and usage.
+This document covers only the **Photoshop Product Crop** specific configuration and usage.
 
 ## Implementation
 
@@ -34,7 +34,7 @@ See the [Shared Setup Guide - App Configuration](shared-setup.md#4-app-configura
 ### Setup Processing Profile
 
 1. Navigate to AEM Tools > Assets > Processing Profiles
-2. Create a new profile named "Product Crop Automation"
+2. Create a new profile named "Photoshop Product Crop"
 3. Add a new Custom Processing Services with the following configuration:
    - **Rendition Name:** `product-crop`
    - **Extension:** `jpg` or `png` (based on your output format)
@@ -85,7 +85,7 @@ Service Parameters:
 ### Execute Automation
 
 1. Create a new folder in AEM Assets
-2. Apply the "Product Crop Automation" processing profile to the folder
+2. Apply the "Photoshop Product Crop" processing profile to the folder
 3. Upload your product images to the folder
 4. The automation will automatically:
    - Detect the subject in the image using AI
@@ -99,7 +99,7 @@ Service Parameters:
 
 **Applies to:** Both self-hosted and shared service
 
-The Product Crop Automation uses Adobe Firefly Services API to:
+The Photoshop Product Crop uses Adobe Firefly Services API to:
 
 1. **Subject Detection**: AI automatically identifies the main subject/product in the image
 2. **Intelligent Cropping**: Calculates optimal crop boundaries around the detected subject
