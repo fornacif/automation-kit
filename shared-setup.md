@@ -119,7 +119,6 @@ actions:
       inDesignFireflyServicesApiClientId: $INDESIGN_FIREFLY_SERVICES_API_CLIENT_ID
       inDesignFireflyServicesApiClientSecret: $INDESIGN_FIREFLY_SERVICES_API_CLIENT_SECRET
       inDesignFireflyServicesApiScopes: $INDESIGN_FIREFLY_SERVICES_API_SCOPES
-      aemCertificate: $AEM_CERTIFICATE
     annotations:
       require-adobe-auth: true
 ```
