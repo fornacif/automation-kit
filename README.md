@@ -39,3 +39,15 @@ The Product Crop feature provides intelligent image cropping capabilities throug
 The Firefly Generate Similar feature uses Adobe Firefly's generative AI to automatically create visually similar variations of your images. This powerful automation leverages advanced machine learning to understand the content, style, and composition of your source image and generate multiple high-quality variations, perfect for A/B testing, creative exploration, or expanding your asset library.
 
 **Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/firefly-generate-similar.md)
+
+### Firefly Available Voices
+
+The Firefly Available Voices feature retrieves a comprehensive list of all available voices from Adobe Firefly's text-to-speech service. This automation provides detailed voice metadata including voice IDs, names, locales, and characteristics, enabling you to discover and select the appropriate voice for your text-to-speech automation needs.
+
+**Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/firefly-available-voices.md)
+
+### Firefly Text to Speech
+
+The Firefly Text to Speech feature converts text content into natural-sounding speech audio files using Adobe Firefly's AI-powered text-to-speech service. This automation leverages advanced voice synthesis technology to generate high-quality audio from text inputs, perfect for creating voiceovers, audio content, accessibility features, and multi-language audio assets.
+
+**Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/firefly-text-to-speech.md)
