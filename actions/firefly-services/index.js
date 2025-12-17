@@ -11,7 +11,8 @@ const ACTION_HANDLERS = {
     'photoshop-product-crop': require('./actions/photoshop-product-crop'),
     'indesign-banners-automation': require('./actions/indesign-banners-automation'),
     'photoshop-banners-automation': require('./actions/photoshop-banners-automation'),
-    'photoshop-action-automation': require('./actions/photoshop-action-automation')
+    'photoshop-action-automation': require('./actions/photoshop-action-automation'),
+    'substance-3d-render': require('./actions/substance-3d-render')
 };
 
 async function createAEMRendition(renditionPath, renditionContent) {

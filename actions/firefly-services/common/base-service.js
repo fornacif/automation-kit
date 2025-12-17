@@ -2,11 +2,12 @@
 
 const aemApiClientLib = require("@adobe/aemcs-api-client-lib");
 const filesLib = require('@adobe/aio-lib-files');
-const { downloadFileConcurrently, uploadFileConcurrently } = require('@adobe/httptransfer');
+const { downloadFile, downloadFileConcurrently, uploadFileConcurrently } = require('@adobe/httptransfer');
 const { v4: uuid4 } = require('uuid');
 const path = require('path');
 const fs = require('fs');
 const DirectBinary = require('@adobe/aem-upload');
+const { error } = require("console");
 
 const DAM_ROOT_PATH = '/content/dam/';
 const DEFAULT_EXPIRY_SECONDS = 180;
@@ -20,7 +21,6 @@ class BaseService {
         this.assetOwnerId = null;
         this.assetPath = null;
         this.automationRelativePath = null;
-        this.directBinaryAccess = null;
         this.fireflyServicesClientId = null;
         this.fireflyServicesToken = null;
         this.inDesignApiKey = null;
@@ -54,7 +54,6 @@ class BaseService {
         const { 'jcr:createdBy': ownerId }  = await this.executeAEMRequest('GET', 'application/json', 'json', `${this.assetPath}.json`);
         this.assetOwnerId = ownerId;
         this.automationRelativePath = path.dirname(this.assetPath).replace(DAM_ROOT_PATH, '');
-        this.directBinaryAccess = rendition.instructions.directBinaryAccess === 'true';
         this.files = await filesLib.init();
 
         if (params.inDesignFireflyServicesApiClientId) {
@@ -169,10 +168,6 @@ class BaseService {
     }
 
     async getAssetPresignedUrl(assetPath) {
-        if (this.directBinaryAccess) {
-            return await this.executeAEMRequest('GET', 'application/json', 'text', '/bin/dbauri', { assetPath });
-        }
-
         const generatedId = uuid4();
         const filePath = `${generatedId}/temp`;
 
@@ -208,11 +203,9 @@ class BaseService {
                 tempId = uuid4();
                 filePath = `${tempId}/temp`;
 
-                await downloadFileConcurrently(source, filePath, {
-                    mkdirs: true,
-                    retryEnabled: true,
-                    retryAllErrors: true
-                });
+                // Use simple downloadFile to avoid HEAD request
+                // Some presigned URLs (e.g., Substance 3D) only allow GET, not HEAD
+                await downloadFile(source, filePath, { mkdirs: true });
             }
 
             const fileSize = fs.statSync(filePath).size;
@@ -232,6 +225,8 @@ class BaseService {
                 }]);
 
             await upload.uploadFiles(options);
+        } catch (err) {
+            throw new Error(`File upload to AEM failed: ${err.message}`);
         } finally {
             if (tempId) {
                 await this.files.delete(`${tempId}/`);
@@ -240,7 +235,7 @@ class BaseService {
     }
 
     async pollForResults(statusUrl, options = {}) {
-        const { apiType = 'firefly' } = options; // 'firefly', 'indesign', or 'photoshop'
+        const { apiType = 'firefly', authToken = null } = options; // 'firefly', 'indesign', 'photoshop', or 'substance3d'
         let retryCount = 0;
 
         while (true) {
@@ -252,7 +247,8 @@ class BaseService {
             if (apiType === 'indesign') {
                 headers['Authorization'] = `Bearer ${this.inDesignApiAccessToken}`;
                 headers['x-api-key'] = this.inDesignApiKey;
-                headers['x-enable-beta'] = 'true';
+            } else if (apiType === 'substance3d') {
+                headers['Authorization'] = `Bearer ${authToken}`;
             } else {
                 // Default to Firefly/Photoshop credentials
                 headers['Authorization'] = `Bearer ${this.fireflyServicesToken}`;
@@ -297,6 +293,11 @@ class BaseService {
                 isRunning = ['pending', 'starting', 'running'].includes(outputStatus);
                 isComplete = !isRunning && outputStatus !== 'failed';
                 isFailed = outputStatus === 'failed';
+            } else if (apiType === 'substance3d') {
+                // Substance 3D API: check result.status
+                isComplete = result.status === 'succeeded';
+                isFailed = result.status === 'failed';
+                isRunning = !isComplete && !isFailed;
             } else {
                 // Firefly API: check result.status
                 isComplete = result.status === 'succeeded';

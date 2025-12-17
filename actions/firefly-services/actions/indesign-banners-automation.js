@@ -7,7 +7,7 @@ const { v4: uuid4 } = require('uuid');
 const fs = require("fs");
 const xlsx = require('xlsx');
 
-class InddBannersAutomationService extends BaseService {
+class InDesignBannersAutomationService extends BaseService {
     constructor() {
         super();
         this.outputFormatType = null;
@@ -209,7 +209,7 @@ class InddBannersAutomationService extends BaseService {
             await this.uploadFileToAEM(outputPresignedUrl, outputFolderPath, `${assetFilename}-merged.indd`);
 
             const resultStatus = await this.pollForResults(result.statusUrl, { apiType: 'indesign' });
-            this.createAEMTask('INDD Automation', `Merge Data produced the following warnings.\n${JSON.stringify(resultStatus.data.warnings, null, 2).replace(/"/g, '').replace(/'/g, "")}`);
+            this.createAEMTask('InDesign Banners Automation', `Merge Data produced the following warnings.\n${JSON.stringify(resultStatus.data.warnings, null, 2).replace(/"/g, '').replace(/'/g, "")}`);
 
             const recordIndex = resultStatus.data.records[0].recordIndex;
             const recordIndexBounds = recordIndex.split("-");
@@ -316,12 +316,12 @@ class InddBannersAutomationService extends BaseService {
     }
 
     getActionDisplayName() {
-        return 'INDD Automation';
+        return 'InDesign Banners Automation';
     }
 }
 
 async function execute(rendition, params) {
-    const service = new InddBannersAutomationService();
+    const service = new InDesignBannersAutomationService();
     await service.initialize(rendition, params);
     return service;
 }

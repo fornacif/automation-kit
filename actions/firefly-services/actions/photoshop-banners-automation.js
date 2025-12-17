@@ -8,7 +8,7 @@ const { v4: uuid4 } = require('uuid');
 const xlsx = require('xlsx');
 const { info, error } = require('console');
 
-class PsdBannersAutomationService extends BaseService {
+class PhotoshopBannersAutomationService extends BaseService {
     constructor() {
         super();
         this.outputFormatType = null;
@@ -415,12 +415,12 @@ class PsdBannersAutomationService extends BaseService {
     }
 
     getActionDisplayName() {
-        return 'PSD Automation';
+        return 'Photoshop Banners Automation';
     }
 }
 
 async function execute(rendition, params) {
-    const service = new PsdBannersAutomationService();
+    const service = new PhotoshopBannersAutomationService();
     await service.initialize(rendition, params);
     return service;
 }
