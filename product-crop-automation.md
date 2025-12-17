@@ -158,7 +158,7 @@ The following parameters can be configured in your AEM Processing Profile:
 | Parameter | Type | Required | Deployment | Default | Description |
 |-----------|------|----------|------------|---------|-------------|
 | `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from [AEM Certificate Setup](#aem-certificate-setup) |
-| `actionName` | string | **Yes** | Shared service only | - | Must be set to `product-crop-automation` |
+| `actionName` | string | **Yes** | Both | - | Must be set to `product-crop-automation` |
 | `createAsset` | boolean | No | Both | `true` | Creates a new asset in AEM with the cropped image or creates a rendition of the original asset if set to false |
 | `outputFormatType` | string | No | Both | `image/jpeg` | Output format. Values: `image/jpeg`, `image/png` |
 | `paddingWidth` | number | No | Both | `50` | Horizontal padding in pixels to add around the detected subject |
@@ -168,6 +168,7 @@ The following parameters can be configured in your AEM Processing Profile:
 **Example Configuration (Self-hosted):**
 ```yaml
 Service Parameters:
+- actionName: product-crop-automation
 - createAsset: true
 - outputFormatType: image/jpeg
 - paddingWidth: 50

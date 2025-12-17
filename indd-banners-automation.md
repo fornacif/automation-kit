@@ -203,13 +203,14 @@ The following parameters can be configured in your AEM Processing Profile:
 | Parameter | Type | Required | Deployment | Default | Description |
 |-----------|------|----------|------------|---------|-------------|
 | `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from [AEM Certificate Setup](#aem-certificate-setup) |
-| `actionName` | string | **Yes** | Shared service only | - | Must be set to `indd-banners-automation` |
+| `actionName` | string | **Yes** | Both | - | Must be set to `indd-banners-automation` |
 | `outputFormatType` | string | No | Both | `application/pdf` | Output format. Values: `application/pdf`, `image/jpeg`, `image/png` |
 | `resolution` | number | No | Both | `300` | Resolution in DPI. Recommended: 300 for print, 72-150 for web |
 
 **Example Configuration (Self-hosted):**
 ```yaml
 Service Parameters:
+- actionName: indd-banners-automation
 - outputFormatType: application/pdf
 - resolution: 300
 ```

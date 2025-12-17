@@ -236,12 +236,13 @@ The following parameters can be configured in your AEM Processing Profile:
 | Parameter | Type | Required | Deployment | Default | Description |
 |-----------|------|----------|------------|---------|-------------|
 | `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from [AEM Certificate Setup](#aem-certificate-setup) |
-| `actionName` | string | **Yes** | Shared service only | - | Must be set to `psd-banners-automation` |
+| `actionName` | string | **Yes** | Both | - | Must be set to `psd-banners-automation` |
 | `outputFormatType` | string | No | Both | - | Output format. Values: `image/jpeg`, `image/png` |
 
 **Example Configuration (Self-hosted):**
 ```yaml
 Service Parameters:
+- actionName: psd-banners-automation
 - outputFormatType: image/jpeg
 ```
 

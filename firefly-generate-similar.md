@@ -158,7 +158,7 @@ The following parameters can be configured in your AEM Processing Profile:
 | Parameter | Type | Required | Deployment | Default | Description |
 |-----------|------|----------|------------|---------|-------------|
 | `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from [AEM Certificate Setup](#aem-certificate-setup) |
-| `actionName` | string | **Yes** | Shared service only | - | Must be set to `firefly-generate-similar` |
+| `actionName` | string | **Yes** | Both | - | Must be set to `firefly-generate-similar` |
 | `numVariations` | number | No | Both | `1` | Number of similar image variations to generate. Range: 1-4 |
 | `imageWidth` | number | No | Both | `2688` | Width of the generated images in pixels |
 | `imageHeight` | number | No | Both | `1536` | Height of the generated images in pixels |
@@ -166,6 +166,7 @@ The following parameters can be configured in your AEM Processing Profile:
 **Example Configuration (Self-hosted):**
 ```yaml
 Service Parameters:
+- actionName: firefly-generate-similar
 - numVariations: 1
 - imageWidth: 2688
 - imageHeight: 1536
