@@ -16,23 +16,23 @@ This practical implementation serves as a powerful demonstration of Content Auto
 
 ## Automation Types
 
-### PSD Banners Automation
+### Photoshop Banners Automation
 
-The PSD Banners Automation system automates the creation of banner variations by generating new PSD templates and converting them into web-ready image formats (JPEG or PNG). This process streamlines marketing asset production and ensures consistency across all banner variations.
+The Photoshop Banners Automation system automates the creation of banner variations by generating new PSD templates and converting them into web-ready image formats (JPEG or PNG). This process streamlines marketing asset production and ensures consistency across all banner variations.
 
-**Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/psd-banners-automation.md)
+**Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/photoshop-banners-automation.md)
 
-### INDD Banners Automation
+### InDesign Banners Automation
 
-The INDD Banners Automation system automates the creation of banner variations by generating new InDesign templates and converting them into print-ready format (PDF) or web-ready image formats (JPEG or PNG). This process streamlines marketing asset production and ensures consistency across all banner variations.
+The InDesign Banners Automation system automates the creation of banner variations by generating new InDesign templates and converting them into print-ready format (PDF) or web-ready image formats (JPEG or PNG). This process streamlines marketing asset production and ensures consistency across all banner variations.
 
-**Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/indd-banners-automation.md)
+**Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/indesign-banners-automation.md)
 
-### Product Crop Automation
+### Photoshop Product Crop
 
-The Product Crop feature provides intelligent image cropping capabilities through AI-powered subject detection, ensuring the product remains perfectly centered and prominent in all generated renditions. The system automatically generates a new asset rendition with generated visual.
+The Photoshop Product Crop feature provides intelligent image cropping capabilities through AI-powered subject detection, ensuring the product remains perfectly centered and prominent in all generated renditions. The system automatically generates a new asset rendition with generated visual.
 
-**Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/product-crop-automation.md)
+**Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/photoshop-product-crop.md)
 
 ### Firefly Generate Similar
 
