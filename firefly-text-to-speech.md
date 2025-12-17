@@ -35,22 +35,22 @@ Sample text files can be found in the [samples/text-to-speech](https://github.co
 
 ### File Naming Convention
 
-**IMPORTANT:** Text files must follow a specific naming pattern to specify the locale for speech synthesis:
+**IMPORTANT:** Text files must include the locale code in the filename to specify the locale for speech synthesis:
 
 ```
-speech-{locale}.txt
+{anything}-{locale}.txt
 ```
 
 **Examples:**
 - `speech-fr-FR.txt` - French (France)
 - `speech-en-US.txt` - English (United States)
-- `speech-es-ES.txt` - Spanish (Spain)
-- `speech-de-DE.txt` - German (Germany)
-- `speech-it-IT.txt` - Italian (Italy)
+- `content-es-ES.txt` - Spanish (Spain)
+- `text-de-DE.txt` - German (Germany)
+- `article-it-IT.txt` - Italian (Italy)
 
 **Key Points:**
-- The filename **must** start with `speech-`
-- The locale code (e.g., `fr-FR`, `en-US`) is extracted from the filename
+- The locale code (e.g., `fr-FR`, `en-US`) must be included in the filename
+- The locale code is extracted from the filename
 - The locale determines which voice characteristics are appropriate
 - The file extension must be `.txt`
 
@@ -104,7 +104,7 @@ Service Parameters:
 
 1. Create a new folder in AEM Assets
 2. Apply the "Firefly Text to Speech" processing profile to the folder
-3. Upload your text files following the naming convention `speech-{locale}.txt` (e.g., `speech-en-US.txt`, `speech-fr-FR.txt`)
+3. Upload your text files with the locale code in the filename (e.g., `speech-en-US.txt`, `content-fr-FR.txt`)
 4. The automation will automatically:
    - Read the text content from the source file
    - Send the text to Firefly Services text-to-speech API
@@ -164,8 +164,8 @@ For common troubleshooting steps, see the [Shared Setup Guide - Common Troublesh
    - Verify the output format is appropriate for your use case
 
 3. **File Naming Issues**
-   - Ensure files follow the naming pattern `speech-{locale}.txt`
-   - Verify the locale code is valid (e.g., `en-US`, `fr-FR`)
+   - Ensure the locale code is included in the filename (e.g., `en-US`, `fr-FR`)
+   - Verify the locale code is valid
    - Check that the locale matches the voiceId being used
    - File must have `.txt` extension
 
