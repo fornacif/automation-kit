@@ -21,7 +21,7 @@ This document covers only the **Firefly Available Voices** specific configuratio
 ### Action Code
 
 For self-hosted deployments, implement the action using:
-- **File:** [actions/firefly-services/firefly-available-voices.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/firefly-available-voices.js)
+- **File:** [actions/firefly-services/index.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/index.js)
 - **Action Name:** `firefly-services` (unified action in app.config.yaml)
 - **Action Identifier:** `firefly-available-voices` (passed via `actionName` parameter)
 
@@ -36,8 +36,8 @@ See the [Shared Setup Guide - App Configuration](shared-setup.md#4-app-configura
 1. Navigate to AEM Tools > Assets > Processing Profiles
 2. Create a new profile named "Firefly Available Voices"
 3. Add a new Custom Processing Services with the following configuration:
-   - **Rendition Name:** `voices`
-   - **Extension:** `json`
+   - **Rendition Name:** `rendition`
+   - **Extension:** `txt`
    - **Endpoint URL:**
      - **Self-hosted:** Use the deployed web action URL from the [Shared Setup Guide - Deployment](shared-setup.md#5-deployment)
      - **Shared service:** `https://85792-608blackantelope-stage.adobeioruntime.net/api/v1/web/demo-kit.processing-profiles/firefly-services`

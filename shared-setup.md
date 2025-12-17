@@ -65,15 +65,10 @@ mkdir firefly-services
 cd firefly-services
 ```
 
-2. Create an `index.js` file with the content from the specific action you want to implement:
-   - [actions/firefly-services/firefly-generate-similar.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/firefly-generate-similar.js)
-   - [actions/firefly-services/psd-banners-automation.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/psd-banners-automation.js)
-   - [actions/firefly-services/indd-banners-automation.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/indd-banners-automation.js)
-   - [actions/firefly-services/product-crop-automation.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/product-crop-automation.js)
-   - [actions/firefly-services/firefly-available-voices.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/firefly-available-voices.js)
-   - [actions/firefly-services/firefly-text-to-speech.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/firefly-text-to-speech.js)
-
-3. All action implementations should be placed in the `actions/firefly-services/` directory
+2. Create an `index.js` file with the unified action handler:
+   - **File:** [actions/firefly-services/index.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/index.js)
+   - This single file handles all automation actions
+   - The specific action executed is determined by the `actionName` parameter passed from the AEM Processing Profile
 
 ### 3. Environment Configuration
 

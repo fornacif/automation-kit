@@ -21,7 +21,7 @@ This document covers only the **Photoshop Banners Automation** specific configur
 ### Action Code
 
 For self-hosted deployments, implement the action using:
-- **File:** [actions/firefly-services/psd-banners-automation.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/psd-banners-automation.js)
+- **File:** [actions/firefly-services/index.js](https://github.com/fornacif/automation-kit/blob/main/actions/firefly-services/index.js)
 - **Action Name:** `firefly-services` (unified action in app.config.yaml)
 - **Action Identifier:** `psd-banners-automation` (passed via `actionName` parameter)
 
@@ -110,8 +110,8 @@ Remember that Smart Crop names in this configuration must match the ones used in
 1. Navigate to AEM Tools > Assets > Processing Profiles
 2. Create a new profile named "Photoshop Banners Automation"
 3. Add a new Custom Processing Services with the following configuration:
-   - **Rendition Name:** `inputs`
-   - **Extension:** `json`
+   - **Rendition Name:** `rendition`
+   - **Extension:** `txt`
    - **Endpoint URL:**
      - **Self-hosted:** Use the deployed web action URL from the [Shared Setup Guide - Deployment](shared-setup.md#5-deployment)
      - **Shared service:** `https://85792-608blackantelope-stage.adobeioruntime.net/api/v1/web/demo-kit.processing-profiles/firefly-services`
