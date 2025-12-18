@@ -78,16 +78,19 @@ Service Parameters:
 
 ### Execute Automation
 
+**⚠️ IMPORTANT:** Do NOT apply the processing profile to a folder. The profile generates new files, which could trigger infinite processing loops. Always execute the processing profile manually on specific files.
+
 1. Create a new folder in AEM Assets
-2. Apply the "Firefly Generate Similar" processing profile to the folder
-3. Upload your source images to the folder
-4. The automation will automatically:
+2. Upload your source images to the folder
+3. Select the source image(s) you want to process
+4. Manually trigger the "Firefly Generate Similar" processing profile (Reprocess Assets)
+5. The automation will:
    - Upload the source image to Firefly Services
    - Generate the specified number of similar variations using AI
    - Download the generated variations
    - Create new assets in AEM for each variation
-5. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
-6. Check that the similar image variations have been created
+6. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+7. Check that the similar image variations have been created
 
 ## How It Works
 

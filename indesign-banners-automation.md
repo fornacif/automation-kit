@@ -122,15 +122,18 @@ Service Parameters:
 
 ### Execute Automation
 
+**⚠️ IMPORTANT:** Do NOT apply the processing profile to a folder. The profile generates new files in the OUTPUTS folder, which could trigger unwanted behavior. Always execute the processing profile manually on the InDesign file.
+
 1. Create a new folder
 2. Upload your InDesign template(s)
 3. Create two subfolders: `INPUTS` and `OUTPUTS`
 4. **(Optional)** Enable Dynamic Media on the `INPUTS` folder (for image optimization)
 5. **(Optional)** If Dynamic Media with Open API is enabled, simply approve the assets once they are uploaded
 6. Upload your assets (images, data file) to the `INPUTS` folder
-7. Trigger manually the "InDesign Banners Automation" processing profile to the InDesign file (Reprocess Assets)
-8. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
-9. Check that new banners have been created inside the `OUTPUTS` folder
+7. Select the InDesign file
+8. Manually trigger the "InDesign Banners Automation" processing profile to the InDesign file (Reprocess Assets)
+9. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+10. Check that new banners have been created inside the `OUTPUTS` folder
 
 ## How It Works
 

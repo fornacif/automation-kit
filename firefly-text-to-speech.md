@@ -102,17 +102,21 @@ Service Parameters:
 
 ### Execute Automation
 
+**⚠️ IMPORTANT:** Do NOT apply the processing profile to a folder. The profile generates new audio files, which could trigger unwanted behavior. Always execute the processing profile manually on specific text files.
+
 1. Create a new folder in AEM Assets
-2. Apply the "Firefly Text to Speech" processing profile to the folder
-3. Upload your text files with the locale code in the filename (e.g., `speech-en-US.txt`, `content-fr-FR.txt`)
-4. The automation will automatically:
+2. Upload your text files with the locale code in the filename (e.g., `speech-en-US.txt`, `content-fr-FR.txt`)
+3. Select the text file(s) you want to convert to speech
+4. Manually trigger the "Firefly Text to Speech" processing profile (Reprocess Assets)
+5. The automation will:
    - Read the text content from the source file
+   - Extract the locale from the filename
    - Send the text to Firefly Services text-to-speech API
-   - Generate audio using the specified voice and parameters
+   - Generate audio using the specified voice
    - Download the generated audio file
    - Create a new audio asset in AEM
-5. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
-6. Check that the audio files have been created
+6. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+7. Check that the audio files have been created
 
 ## How It Works
 

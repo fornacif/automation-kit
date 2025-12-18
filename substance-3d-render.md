@@ -97,17 +97,20 @@ Service Parameters:
 
 ### Execute Automation
 
+**⚠️ IMPORTANT:** Do NOT apply the processing profile to a folder. The profile generates new rendered image files, which could trigger unwanted behavior. Always execute the processing profile manually on specific 3D model files.
+
 1. Create a new folder in AEM Assets
-2. Apply the "Substance 3D Render" processing profile to the folder
-3. Upload your 3D model files (glTF, GLB, or other supported formats) to the folder
-4. The automation will automatically:
+2. Upload your 3D model files (glTF, GLB, or other supported formats) to the folder
+3. Select the 3D model file(s) you want to render
+4. Manually trigger the "Substance 3D Render" processing profile (Reprocess Assets)
+5. The automation will:
    - Upload the 3D model to Substance 3D services
    - Configure camera positions based on the specified parameters
    - Render the model from multiple azimuth angles
    - Download the generated renders
    - Create new image assets in AEM for each render
-5. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
-6. Check that the rendered images have been created
+6. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+7. Check that the rendered images have been created
 
 ## How It Works
 

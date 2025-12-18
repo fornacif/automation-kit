@@ -72,15 +72,18 @@ Service Parameters:
 
 ### Execute Automation
 
+**⚠️ IMPORTANT:** Do NOT apply the processing profile to a folder. The profile generates output in AEM tasks, which could trigger unwanted behavior. Always execute the processing profile manually on a specific file.
+
 1. Create a new folder in AEM Assets
-2. Apply the "Firefly Available Voices" processing profile to the folder
-3. Upload a trigger asset (e.g., a text file or placeholder) to the folder
-4. The automation will automatically:
+2. Upload a trigger asset (e.g., a text file or placeholder) to the folder
+3. Select the trigger asset
+4. Manually trigger the "Firefly Available Voices" processing profile (Reprocess Assets)
+5. The automation will:
    - Query the Firefly Services API for available voices
    - Retrieve voice metadata including IDs, names, and locales
-   - Create a JSON asset in AEM with the voice listing
-5. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
-6. Check that the voices JSON file has been created
+   - Print voice IDs in the AEM task created
+6. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+7. Check the task details to view the available voice IDs
 
 ## How It Works
 
