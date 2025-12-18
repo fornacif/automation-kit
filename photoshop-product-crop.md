@@ -86,17 +86,16 @@ Service Parameters:
 
 **⚠️ IMPORTANT:** Do NOT apply the processing profile to a folder. The profile generates new files (if `createAsset` is true) or renditions, which could trigger unwanted behavior. Always execute the processing profile manually on specific files.
 
-1. Create a new folder in AEM Assets
-2. Upload your product images to the folder
-3. Select the image(s) you want to process
-4. Manually trigger the "Photoshop Product Crop" processing profile (Reprocess Assets)
-5. The automation will:
+1. Upload your product images to the folder
+2. Select the image(s) you want to process
+3. Manually trigger the "Photoshop Product Crop" processing profile (Reprocess Assets)
+4. The automation will:
    - Detect the subject in the image using AI
    - Apply the specified padding around the subject
    - Generate a cropped image with the product centered
    - Create a new asset or rendition based on your configuration
-6. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
-7. Check that the cropped product images have been created
+5. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+6. Check that the cropped product images have been created
 
 ## How It Works
 

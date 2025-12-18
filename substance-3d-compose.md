@@ -67,9 +67,9 @@ The following parameters can be configured in your AEM Processing Profile:
 | `certificate` | string | **Yes** | Shared service only | - | The AEM certificate JSON structure obtained from the [Shared Setup Guide - AEM Certificate Setup](shared-setup.md#aem-certificate-setup) |
 | `actionName` | string | **Yes** | Both | - | Must be set to `substance-3d-compose` |
 | `substance3dAccessToken` | string | **Yes** | Both | - | Access token obtained from [Substance 3D API Documentation](https://s3d.adobe.io/docs#/) |
-| `cameraName` | string | No | Both | - | Name of the camera to use for the composition |
-| `heroAsset` | string | No | Both | - | Path or identifier of the main/hero asset in the composition |
-| `prompt` | string | No | Both | - | Text prompt or description for AI-assisted scene composition |
+| `cameraName` | string | **Yes** | Both | - | Name of the camera to use for the composition |
+| `heroAsset` | string | **Yes** | Both | - | Path or identifier of the main/hero asset in the composition |
+| `prompt` | string | **Yes** | Both | - | Text prompt or description for AI-assisted scene composition |
 
 **Example Configuration (Self-hosted):**
 ```yaml
@@ -96,18 +96,17 @@ Service Parameters:
 
 **⚠️ IMPORTANT:** Do NOT apply the processing profile to a folder. The profile generates new composed scene files, which could trigger unwanted behavior. Always execute the processing profile manually on specific 3D model files.
 
-1. Create a new folder in AEM Assets
-2. Upload your 3D model files or scene configuration to the folder
-3. Select the file(s) you want to process
-4. Manually trigger the "Substance 3D Compose" processing profile (Reprocess Assets)
-5. The automation will:
+1. Upload your 3D model files or scene configuration to the folder
+2. Select the file(s) you want to process
+3. Manually trigger the "Substance 3D Compose" processing profile (Reprocess Assets)
+4. The automation will:
    - Upload the 3D assets to Substance 3D services
    - Compose and stage the 3D scene based on configuration
    - Generate the composed scene
    - Download the generated output
    - Create new assets in AEM
-6. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
-7. Check that the composed scene assets have been created
+5. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+6. Check that the composed scene assets have been created
 
 ## How It Works
 

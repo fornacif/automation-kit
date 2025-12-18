@@ -148,17 +148,16 @@ Service Parameters:
 
 **⚠️ IMPORTANT:** Do NOT apply the processing profile to a folder. The profile generates new files in the OUTPUTS folder, which could trigger unwanted behavior. Always execute the processing profile manually on the PSD file.
 
-1. Create a new folder
-2. Upload your PSD template
-3. Create two subfolders: `INPUTS` and `OUTPUTS`
-4. **(Optional)** Apply the Image Processing Profile to the `INPUTS` folder (only if using Smart Crop)
-5. **(Optional)** Enable Dynamic Media on the `INPUTS` folder (only if using Smart Crop)
-6. **(Optional)** If Dynamic Media with Open API is enabled, simply approve the assets once they are uploaded
-7. Upload your assets (images and fonts) to the `INPUTS` folder
-8. Select the PSD file
-9. Manually trigger the "Photoshop Banners Automation" processing profile to the PSD file (Reprocess Assets)
-10. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
-11. Check that new banners have been created inside the `OUTPUTS` folder
+1. Upload your PSD template
+2. Create two subfolders: `INPUTS` and `OUTPUTS`
+3. **(Optional)** Apply the Image Processing Profile to the `INPUTS` folder (only if using Smart Crop)
+4. **(Optional)** Enable Dynamic Media on the `INPUTS` folder (only if using Smart Crop)
+5. **(Optional)** If Dynamic Media with Open API is enabled, simply approve the assets once they are uploaded
+6. Upload your assets (images and fonts) to the `INPUTS` folder
+7. Select the PSD file
+8. Manually trigger the "Photoshop Banners Automation" processing profile to the PSD file (Reprocess Assets)
+9. Monitor the processing in the AEM Assets processing queue and check Tasks in the AEM Inbox
+10. Check that new banners have been created inside the `OUTPUTS` folder
 
 ## How It Works
 
