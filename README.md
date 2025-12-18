@@ -58,3 +58,9 @@ The Firefly Text to Speech feature converts text content into natural-sounding s
 The Substance 3D Render action automates the rendering of 3D models using Adobe Substance 3D services. This automation generates high-quality renders from 3D assets with customizable camera angles, lighting, and rendering parameters, perfect for product visualization, 360° views, and marketing materials.
 
 **Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/substance-3d-render.md)
+
+### Substance 3D Compose
+
+The Substance 3D Compose action automates the composition and staging of 3D scenes using Adobe Substance 3D services. This automation allows you to programmatically arrange, compose, and configure 3D assets with AI-assisted scene composition, camera positioning, and hero asset configuration.
+
+**Documentation:** [Self-hosted and Shared service](https://github.com/fornacif/automation-kit/blob/main/substance-3d-compose.md)

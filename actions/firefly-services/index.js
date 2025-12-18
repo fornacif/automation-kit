@@ -12,7 +12,8 @@ const ACTION_HANDLERS = {
     'indesign-banners-automation': require('./actions/indesign-banners-automation'),
     'photoshop-banners-automation': require('./actions/photoshop-banners-automation'),
     'photoshop-action-automation': require('./actions/photoshop-action-automation'),
-    'substance-3d-render': require('./actions/substance-3d-render')
+    'substance-3d-render': require('./actions/substance-3d-render'),
+    'substance-3d-compose': require('./actions/substance-3d-compose')
 };
 
 async function createAEMRendition(renditionPath, renditionContent) {
