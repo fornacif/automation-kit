@@ -1,6 +1,6 @@
-![Banner](banner.png)
-
 # Automation Kit
+
+![Banner](banner.png)
 
 ## Introduction
 
