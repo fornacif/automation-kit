@@ -10,11 +10,11 @@
 <br>
 
 The kit demonstrates how organizations can transform their content creation workflow through:
-- Adobe Firefly Services API for Photoshop-powered or InDesign-powered creative operations, AI-powered image generation (Generate Similar), text-to-speech audio synthesis, and automated content manipulation
-- Adobe Substance 3D API for automated 3D model rendering and visualization
-- AEM Assets for digital asset management, showcasing enterprise-scale content organization and workflow automation
-- Dynamic Media for rich media delivery and Smart Cropping features, demonstrating automated responsive design capabilities
-- Adobe App Builder for extensible cloud-native applications and API orchestration, highlighting integration possibilities and customization options
+- <b>Adobe Firefly Services API</b> for Photoshop-powered or InDesign-powered creative operations, AI-powered image generation (Generate Similar), text-to-speech audio synthesis, and automated content manipulation
+- <b>Adobe Substance 3D API</b> for automated 3D model rendering and visualization
+- <b>AEM Assets</b> for digital asset management, showcasing enterprise-scale content organization and workflow automation
+- <b>Dynamic Media</b> for rich media delivery and Smart Cropping features, demonstrating automated responsive design capabilities
+- <b>Adobe App Builder</b> for extensible cloud-native applications and API orchestration, highlighting integration possibilities and customization options
 
 The solution leverages these technologies to create automated workflows for content generation, 3D rendering, and asset production, significantly reducing manual effort and ensuring consistency across marketing materials.
 
