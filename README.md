@@ -7,7 +7,7 @@
 <details>
 
 <summary>This Automation Kit provides a comprehensive solution for automating content creation using various Adobe services, making it an ideal demonstration tool to showcase Content Automation capabilities aligned with the Content Supply Chain play.</summary>
-
+<br>
 
 The kit demonstrates how organizations can transform their content creation workflow through:
 - Adobe Firefly Services API for Photoshop-powered or InDesign-powered creative operations, AI-powered image generation (Generate Similar), text-to-speech audio synthesis, and automated content manipulation
@@ -18,9 +18,9 @@ The kit demonstrates how organizations can transform their content creation work
 
 The solution leverages these technologies to create automated workflows for content generation, 3D rendering, and asset production, significantly reducing manual effort and ensuring consistency across marketing materials.
 
-This practical implementation serves as a powerful demonstration of Content Automation's value proposition, helping anyone effectively communicate the benefits of Adobe's integrated solutions to prospects and customers exploring ways to scale their content operations.
-
 </details>
+
+This practical implementation serves as a powerful demonstration of Content Automation's value proposition, helping anyone effectively communicate the benefits of Adobe's integrated solutions to prospects and customers exploring ways to scale their content operations.
 
 ## Automation Types
 
