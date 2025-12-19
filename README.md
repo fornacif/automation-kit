@@ -6,7 +6,7 @@
 
 <details>
 
-<summary>**Automation Kit** provides a comprehensive solution for automating content creation using various Adobe services, making it an ideal demonstration tool to showcase Content Automation capabilities aligned with the Content Supply Chain play.</summary>
+<summary><b>Automation Kit</b> provides a comprehensive solution for automating content creation using various Adobe services, making it an ideal demonstration tool to showcase Content Automation capabilities aligned with the Content Supply Chain play.</summary>
 <br>
 
 The kit demonstrates how organizations can transform their content creation workflow through:
