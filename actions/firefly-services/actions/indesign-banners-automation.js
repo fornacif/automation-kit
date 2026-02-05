@@ -205,10 +205,10 @@ class InDesignBannersAutomationService extends BaseService {
         if (response.ok) {
             const result = await response.json();
 
+            const resultStatus = await this.pollForResults(result.statusUrl, { apiType: 'indesign' });
+
             const assetFilename = path.parse(this.assetPath).name;
             await this.uploadFileToAEM(outputPresignedUrl, outputFolderPath, `${assetFilename}-merged.indd`);
-
-            const resultStatus = await this.pollForResults(result.statusUrl, { apiType: 'indesign' });
             this.createAEMTask('InDesign Banners Automation', `Merge Data produced the following warnings.\n${JSON.stringify(resultStatus.data.warnings, null, 2).replace(/"/g, '').replace(/'/g, "")}`);
 
             const recordIndex = resultStatus.data.records[0].recordIndex;
