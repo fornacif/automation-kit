@@ -293,7 +293,10 @@ class PhotoshopBannersAutomationService extends BaseService {
     }
 
     async generateAssets(inputUrl, documentManifest, outputFolderPath, variationName, fontPaths, imagePaths, languageName, languageContent) {
-        const layers = documentManifest.layers;
+        const layers = documentManifest.outputs?.[0]?.layers;
+        if (!layers) {
+            throw new Error(`No layers found in document manifest. Ensure the PSD template contains artboard layers.`);
+        }
         const variationOutputFilename = `${variationName}-${languageName}.psd`;
 
         const tempPsdUrl = await this.generatePresignURL();
