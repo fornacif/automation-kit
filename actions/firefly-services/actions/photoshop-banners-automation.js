@@ -1,5 +1,9 @@
 'use strict'
 
+if (typeof globalThis.crypto === 'undefined') {
+    globalThis.crypto = require('crypto');
+}
+
 const BaseService = require('../common/base-service');
 const path = require('path');
 const { StorageType, ImageFormatType } = require("@adobe/photoshop-apis");
@@ -76,8 +80,20 @@ class PhotoshopBannersAutomationService extends BaseService {
         const headers = lines[0].split(',').map(header => header.replace(/^"|"$/g, '').trim());
 
         const data = lines.slice(1).map(line => {
-            const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)
-                .map(val => val.replace(/^"|"$/g, '').trim());
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                if (line[i] === '"') {
+                    inQuotes = !inQuotes;
+                } else if (line[i] === ',' && !inQuotes) {
+                    values.push(current.trim());
+                    current = '';
+                } else {
+                    current += line[i];
+                }
+            }
+            values.push(current.trim());
 
             return headers.reduce((obj, header, index) => {
                 obj[header] = values[index];
@@ -193,12 +209,9 @@ class PhotoshopBannersAutomationService extends BaseService {
                 };
                 smartObjects.push(smartObject);
             } else if ('textLayer' == subLayer.type) {
-                const [key = subLayer.name, tracking = 0] = subLayer.name.split("|");
                 const textLayer = {
                     layerId: subLayer.id,
-                    layerName: subLayer.name,
-                    textKey: key,
-                    tracking: +tracking
+                    layerName: subLayer.name
                 };
                 textLayers.push(textLayer);
             } else {
@@ -273,21 +286,80 @@ class PhotoshopBannersAutomationService extends BaseService {
         }
     }
 
-    async populateTextsOptions(options, languageContent, textLayers) {
+    parseHexColor(hex) {
+        hex = hex.replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        return {
+            red: r * 257,
+            green: g * 257,
+            blue: b * 257
+        };
+    }
+
+    parseStyledText(textValue) {
+        const segments = [];
+        const styleRegex = /\[([^\]]*)\]\(([^)]*)\)/g;
+        let lastIndex = 0;
+        let match;
+
+        while ((match = styleRegex.exec(textValue)) !== null) {
+            if (match.index > lastIndex) {
+                segments.push({ text: textValue.substring(lastIndex, match.index) });
+            }
+
+            const text = match[1];
+            const attrsStr = match[2];
+            const style = {};
+            const attrRegex = /(\w+)=(\S+)/g;
+            let attrMatch;
+
+            while ((attrMatch = attrRegex.exec(attrsStr)) !== null) {
+                const [, key, value] = attrMatch;
+                switch (key) {
+                    case 'size': style.size = +value; break;
+                    case 'color': style.color = value; break;
+                    case 'tracking': style.tracking = +value; break;
+                }
+            }
+
+            segments.push({ text, style });
+            lastIndex = match.index + match[0].length;
+        }
+
+        if (lastIndex < textValue.length) {
+            segments.push({ text: textValue.substring(lastIndex) });
+        }
+
+        return segments;
+    }
+
+    populateTextsOptions(options, languageContent, textLayers) {
         options.layers = options.layers || [];
         for (const [textKey, textValue] of Object.entries(languageContent)) {
             for (const textLayer of textLayers) {
-                if (textLayer.textKey === textKey) {
-                    options.layers.push({
-                        id: textLayer.layerId,
-                        text: {
-                            content: textValue,
-                            characterStyles: [{
-                                tracking: textLayer.tracking
-                            }]
-                        }
-                    });
+                if (textLayer.layerName !== textKey) continue;
+
+                const segments = this.parseStyledText(textValue);
+                const content = segments.map(s => s.text).join('');
+                const charStyle = {};
+
+                const style = segments.find(s => s.style)?.style;
+                if (style) {
+                    if (style.size) charStyle.size = style.size;
+                    if (style.color) charStyle.color = this.parseHexColor(style.color);
                 }
+
+                const textObj = { content };
+                if (Object.keys(charStyle).length > 0) {
+                    textObj.characterStyles = [charStyle];
+                }
+                options.layers.push({
+                    id: textLayer.layerId,
+                    edit: {},
+                    text: textObj
+                });
             }
         }
     }
@@ -321,6 +393,7 @@ class PhotoshopBannersAutomationService extends BaseService {
         const photoshopOptions = {};
         await this.populateFontsOptions(photoshopOptions, fontPaths);
         await this.populateSmartObjectsOptions(photoshopOptions, imagePaths, smartObjects);
+        this.populateTextsOptions(photoshopOptions, languageContent, textLayers);
 
         this.renditionContent += `\n ---- photoshopOptions for variation ${variationName} and language ${languageName} ----\n ${JSON.stringify(photoshopOptions, null, 2)}`;
 
@@ -334,7 +407,7 @@ class PhotoshopBannersAutomationService extends BaseService {
             body: JSON.stringify({
                 inputs: [this.createPhotoshopInput(inputUrl)],
                 options: photoshopOptions,
-                outputs: [this.createPhotoshopOutput(tempPsdUrl, ImageFormatType.IMAGE_VND_ADOBE_PHOTOSHOP)]
+                outputs: photoshopOutputs
             })
         });
         if (!documentOperationsResponse.ok) {
@@ -343,47 +416,25 @@ class PhotoshopBannersAutomationService extends BaseService {
         const documentOperationsResult = await documentOperationsResponse.json();
         await this.pollForResults(documentOperationsResult['_links'].self.href, { apiType: 'photoshop' });
 
-        const textOptions = {};
-        await this.populateTextsOptions(textOptions, languageContent, textLayers);
-        await this.populateFontsOptions(textOptions, fontPaths);
-
-        this.renditionContent += `\n ---- textOptions for variation ${variationName} and language ${languageName} ----\n ${JSON.stringify(textOptions, null, 2)}`;
-
-        const textResponse = await fetch('https://image.adobe.io/pie/psdService/text', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${this.fireflyServicesToken}`,
-                'x-api-key': this.fireflyServicesClientId,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                inputs: [this.createPhotoshopInput(tempPsdUrl)],
-                options: textOptions,
-                outputs: photoshopOutputs
-            })
-        });
-
-        if (!textResponse.ok) {
-            throw new Error(`Text editing failed: ${textResponse.statusText}`);
-        }
-        const textResult = await textResponse.json();
-        await this.pollForResults(textResult['_links'].self.href, { apiType: 'photoshop' });
-
         await Promise.all(aemUploads.map(({presignedUrl, filename}) => this.uploadFileToAEM(presignedUrl, outputFolderPath, filename)));
     }
 
     validateInputs(inputs) {
         const variations = inputs.variations;
 
-        Object.entries(variations).forEach(([variationName, variation]) => {
-            if (!variation.imagePaths || !Array.isArray(variation.imagePaths) || variation.imagePaths.length === 0) {
-                throw new Error(`Variation "${variationName}" must have at least one image`);
-            }
+        for (const [variationName, variation] of Object.entries(variations)) {
+            const hasImages = variation.imagePaths?.length > 0;
+            const hasLanguages = variation.languages && Object.keys(variation.languages).length > 0;
 
-            if (!variation.languages || typeof variation.languages !== 'object' || Object.keys(variation.languages).length === 0) {
-                throw new Error(`Variation "${variationName}" must have at least one language`);
+            if (!hasImages || !hasLanguages) {
+                info(`Skipping variation "${variationName}": missing ${!hasImages ? 'images' : 'texts'}`);
+                delete variations[variationName];
             }
-        });
+        }
+
+        if (Object.keys(variations).length === 0) {
+            throw new Error('No valid variations found with both images and texts');
+        }
     }
 
     async executeAutomation() {
