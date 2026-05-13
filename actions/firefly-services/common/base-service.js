@@ -2,11 +2,9 @@
 
 const aemApiClientLib = require("@adobe/aemcs-api-client-lib");
 const filesLib = require('@adobe/aio-lib-files');
-const { downloadFile, downloadFileConcurrently, uploadFileConcurrently } = require('@adobe/httptransfer');
 const { v4: uuid4 } = require('uuid');
 const path = require('path');
-const fs = require('fs');
-const DirectBinary = require('@adobe/aem-upload');
+const { Readable } = require('stream');
 const { error } = require("console");
 
 const DAM_ROOT_PATH = '/content/dam/';
@@ -23,8 +21,6 @@ class BaseService {
         this.automationRelativePath = null;
         this.fireflyServicesClientId = null;
         this.fireflyServicesToken = null;
-        this.inDesignApiKey = null;
-        this.inDesignApiAccessToken = null;
         this.files = null;
     }
 
@@ -55,11 +51,6 @@ class BaseService {
         this.assetOwnerId = ownerId;
         this.automationRelativePath = path.dirname(this.assetPath).replace(DAM_ROOT_PATH, '');
         this.files = await filesLib.init();
-
-        if (params.inDesignFireflyServicesApiClientId) {
-            this.inDesignApiKey = params.inDesignFireflyServicesApiClientId;
-            this.inDesignApiAccessToken = await this.generateInDesignApiAccessToken(params);
-        }
     }
 
     getAemHost(certificate, type) {
@@ -87,29 +78,6 @@ class BaseService {
 
         const data = await response.json();
         return data.access_token;
-    }
-
-    async generateInDesignApiAccessToken(params) {
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
-                'grant_type': 'client_credentials',
-                'client_id': params.inDesignFireflyServicesApiClientId,
-                'client_secret': params.inDesignFireflyServicesApiClientSecret,
-                'scope': params.inDesignFireflyServicesApiScopes
-            })
-        };
-
-        const response = await fetch('https://ims-na1.adobelogin.com/ims/token/v3', options);
-        if (!response.ok) {
-            throw new Error(`Access Token creation failed: ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        return result.access_token;
     }
 
     async executeAEMRequest(method, contentType, resultType, path, params = {}) {
@@ -168,69 +136,76 @@ class BaseService {
     }
 
     async getAssetPresignedUrl(assetPath) {
-        const generatedId = uuid4();
-        const filePath = `${generatedId}/temp`;
+        const filePath = `${uuid4()}/temp`;
 
-        try {
-            await downloadFileConcurrently(
-                `${this.aemAuthorHost}/${assetPath}`,
-                filePath,
-                {
-                    mkdirs: true,
-                    headers: { Authorization: `Bearer ${this.aemAccessToken}` }
-                }
-            );
+        const response = await fetch(`${this.aemAuthorHost}/${assetPath}`, {
+            headers: { Authorization: `Bearer ${this.aemAccessToken}` }
+        });
 
-            const presignedUrl = await this.files.generatePresignURL(generatedId, {
-                expiryInSeconds: DEFAULT_EXPIRY_SECONDS,
-                permissions: DEFAULT_FILE_PERMISSIONS
-            });
-
-            await uploadFileConcurrently(filePath, presignedUrl);
-            return presignedUrl;
-        } finally {
-            await this.files.delete(`${generatedId}/`);
+        if (!response.ok) {
+            throw new Error(`Failed to download asset from AEM: ${response.status} ${response.statusText}`);
         }
+
+        await this.files.write(filePath, Readable.fromWeb(response.body));
+
+        return await this.files.generatePresignURL(filePath, {
+            expiryInSeconds: DEFAULT_EXPIRY_SECONDS,
+            permissions: DEFAULT_FILE_PERMISSIONS
+        });
     }
 
     async uploadFileToAEM(source, targetFolderPath, fileName) {
-        let filePath = source;
-        let tempId = null;
-
         try {
-            // If source is a URL (presigned URL), download it first
-            if (source.startsWith('http')) {
-                tempId = uuid4();
-                filePath = `${tempId}/temp`;
-
-                // Use simple downloadFile to avoid HEAD request
-                // Some presigned URLs (e.g., Substance 3D) only allow GET, not HEAD
-                await downloadFile(source, filePath, { mkdirs: true });
+            // Some presigned URLs (e.g., Substance 3D) only allow GET, not HEAD
+            const downloadResponse = await fetch(source);
+            if (!downloadResponse.ok) {
+                throw new Error(`Failed to download file: ${downloadResponse.status} ${downloadResponse.statusText}`);
             }
 
-            const fileSize = fs.statSync(filePath).size;
+            const fileSize = parseInt(downloadResponse.headers.get('content-length'), 10);
+            if (!fileSize) {
+                throw new Error('Source URL did not provide Content-Length header');
+            }
 
-            const upload = new DirectBinary.DirectBinaryUpload();
-            const options = new DirectBinary.DirectBinaryUploadOptions()
-                .withUrl(`${this.aemAuthorHost}${targetFolderPath}`)
-                .withHttpOptions({
-                    headers: {
-                        Authorization: `Bearer ${this.aemAccessToken}`
-                    }
-                })
-                .withUploadFiles([{
-                    fileName,
-                    fileSize,
-                    filePath
-                }]);
+            // Initiate upload — pass maxPartSize=fileSize to get a single upload URI
+            const initiateRes = await fetch(`${this.aemAuthorHost}${targetFolderPath}.initiateUpload.json`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${this.aemAccessToken}`,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({ fileName, fileSize, maxPartSize: fileSize })
+            });
+            if (!initiateRes.ok) {
+                throw new Error(`Upload initiation failed: ${initiateRes.status} ${initiateRes.statusText}`);
+            }
 
-            await upload.uploadFiles(options);
+            const { files: [{ uploadToken, uploadURIs, mimeType }], completeURI } = await initiateRes.json();
+
+            // Stream directly from source to AEM upload URI — no disk or memory buffering
+            const putRes = await fetch(uploadURIs[0], {
+                method: 'PUT',
+                headers: { 'Content-Length': fileSize },
+                body: downloadResponse.body,
+                duplex: 'half'
+            });
+            if (!putRes.ok) {
+                throw new Error(`Chunk upload failed: ${putRes.status} ${putRes.statusText}`);
+            }
+
+            const completeRes = await fetch(`${this.aemAuthorHost}${completeURI}`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${this.aemAccessToken}`,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({ fileName, uploadToken, mimeType: mimeType || 'application/octet-stream', fileSize })
+            });
+            if (!completeRes.ok) {
+                throw new Error(`Upload completion failed: ${completeRes.status} ${completeRes.statusText}`);
+            }
         } catch (err) {
             throw new Error(`File upload to AEM failed: ${err.message}`);
-        } finally {
-            if (tempId) {
-                await this.files.delete(`${tempId}/`);
-            }
         }
     }
 
@@ -245,8 +220,8 @@ class BaseService {
 
             // Set authentication based on API type
             if (apiType === 'indesign') {
-                headers['Authorization'] = `Bearer ${this.inDesignApiAccessToken}`;
-                headers['x-api-key'] = this.inDesignApiKey;
+                headers['Authorization'] = `Bearer ${this.fireflyServicesToken}`;
+                headers['x-api-key'] = this.fireflyServicesClientId;
             } else if (apiType === 'substance3d') {
                 headers['Authorization'] = `Bearer ${authToken}`;
             } else {
@@ -319,33 +294,28 @@ class BaseService {
     }
 
     async uploadImageToFireflyStorage(imageUrl, contentType) {
-        const generatedId = uuid4();
-        const filePath = `${generatedId}/temp`;
+        const downloadResponse = await fetch(imageUrl);
 
-        try {
-            await downloadFileConcurrently(imageUrl, filePath, { mkdirs: true });
-
-            const imageBuffer = fs.readFileSync(filePath);
-
-            const response = await fetch('https://firefly-api.adobe.io/v2/storage/image', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${this.fireflyServicesToken}`,
-                    'x-api-key': this.fireflyServicesClientId,
-                    'Content-Type': contentType
-                },
-                body: imageBuffer
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to upload image to Firefly storage: ${response.statusText}`);
-            }
-
-            const result = await response.json();
-            return result.images[0].id;
-        } finally {
-            await this.files.delete(`${generatedId}/`);
+        if (!downloadResponse.ok) {
+            throw new Error(`Failed to download image: ${downloadResponse.status} ${downloadResponse.statusText}`);
         }
+
+        const response = await fetch('https://firefly-api.adobe.io/v2/storage/image', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.fireflyServicesToken}`,
+                'x-api-key': this.fireflyServicesClientId,
+                'Content-Type': contentType
+            },
+            body: downloadResponse.body
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to upload image to Firefly storage: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        return result.images[0].id;
     }
 
     getDamRootPath() {

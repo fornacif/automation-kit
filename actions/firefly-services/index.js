@@ -13,7 +13,8 @@ const ACTION_HANDLERS = {
     'photoshop-banners-automation': require('./actions/photoshop-banners-automation'),
     'photoshop-action-automation': require('./actions/photoshop-action-automation'),
     'substance-3d-render': require('./actions/substance-3d-render'),
-    'substance-3d-compose': require('./actions/substance-3d-compose')
+    'substance-3d-compose': require('./actions/substance-3d-compose'),
+    'run-workflow': require('./actions/run-workflow')
 };
 
 async function createAEMRendition(renditionPath, renditionContent) {

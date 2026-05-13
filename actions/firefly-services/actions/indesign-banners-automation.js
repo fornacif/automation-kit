@@ -114,8 +114,8 @@ class InDesignBannersAutomationService extends BaseService {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.inDesignApiAccessToken}`,
-                'x-api-key': this.inDesignApiKey
+                'Authorization': `Bearer ${this.fireflyServicesToken}`,
+                'x-api-key': this.fireflyServicesClientId
             }
         };
 

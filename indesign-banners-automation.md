@@ -25,8 +25,6 @@ For self-hosted deployments, implement the action using:
 - **Action Name:** `firefly-services` (unified action in app.config.yaml)
 - **Action Identifier:** `indesign-banners-automation` (passed via `actionName` parameter)
 
-**Note:** This action requires InDesign Firefly Services API credentials. See the [Shared Setup Guide - Environment Configuration](shared-setup.md#3-environment-configuration) for InDesign-specific environment variables.
-
 See the [Shared Setup Guide - App Configuration](shared-setup.md#4-app-configuration) for the unified `app.config.yaml` configuration.
 
 ## Sample Assets
@@ -198,7 +196,7 @@ For common troubleshooting steps, see the [Shared Setup Guide - Common Troublesh
    - Check for missing font warnings in error messages
 
 6. **API Issues**
-   - Verify InDesign Firefly Services API credentials are configured (self-hosted)
+   - Verify Firefly Services API credentials are configured (self-hosted)
    - Check that API quota is not exceeded
    - Monitor API response times for large files
 

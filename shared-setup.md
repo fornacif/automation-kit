@@ -15,7 +15,7 @@ This document contains common setup instructions that apply to all automation ac
 - Adobe Developer Console access
 - App Builder
 - AEM as a Cloud Service instance
-- Firefly Services API access (credentials) or InDesign Firefly Services API access (credentials) depending on the action
+- Firefly Services API access (credentials)
 - Node.js 18+ installed
 - Adobe I/O CLI installed (`npm install -g @adobe/aio-cli`)
 - Dynamic Media or Dynamic Media with Open API (optional, required only for actions that use Smart Crop features)
@@ -77,17 +77,12 @@ Add the following properties to your `.env` file:
 ```plaintext
 # This file must not be committed to source control
 
-# For Firefly Services (Photoshop, Firefly AI, Product Crop, TTS)
+# Firefly Services (used by all actions including InDesign)
 FIREFLY_SERVICES_API_CLIENT_ID=[REDACTED]
 FIREFLY_SERVICES_API_CLIENT_SECRET=[REDACTED]
 FIREFLY_SERVICES_API_SCOPES=openid,AdobeID,read_organizations,firefly_api,ff_apis
 
-# For InDesign Services (only if using INDD actions)
-INDESIGN_FIREFLY_SERVICES_API_CLIENT_ID=[REDACTED]
-INDESIGN_FIREFLY_SERVICES_API_CLIENT_SECRET=[REDACTED]
-INDESIGN_FIREFLY_SERVICES_API_SCOPES=openid,AdobeID,creative_sdk,indesign_services,creative_cloud
-
-# AEM Certificate (required for both Firefly and InDesign services)
+# AEM Certificate
 AEM_CERTIFICATE='{
   "ok": true,
   "integration": {
@@ -116,9 +111,6 @@ actions:
       fireflyServicesApiClientId: $FIREFLY_SERVICES_API_CLIENT_ID
       fireflyServicesApiClientSecret: $FIREFLY_SERVICES_API_CLIENT_SECRET
       fireflyServicesApiScopes: $FIREFLY_SERVICES_API_SCOPES
-      inDesignFireflyServicesApiClientId: $INDESIGN_FIREFLY_SERVICES_API_CLIENT_ID
-      inDesignFireflyServicesApiClientSecret: $INDESIGN_FIREFLY_SERVICES_API_CLIENT_SECRET
-      inDesignFireflyServicesApiScopes: $INDESIGN_FIREFLY_SERVICES_API_SCOPES
     annotations:
       require-adobe-auth: true
 ```
@@ -229,8 +221,7 @@ The specific action to execute is determined by the `actionName` parameter in yo
 ### API Issues
 
 1. **API credentials (Self-hosted only)**
-   - Verify Firefly Services API credentials are valid
-   - For InDesign actions, check InDesign API credentials separately
+   - Verify Firefly Services API credentials are valid (used by all actions, including InDesign)
    - Ensure credentials have not expired
 
 2. **API quota**

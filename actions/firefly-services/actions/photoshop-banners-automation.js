@@ -259,7 +259,7 @@ class PhotoshopBannersAutomationService extends BaseService {
         });
 
         if (!response.ok) {
-            throw new Error(`Image URL validation failed - ${imageUrl} not found.`);
+            throw new Error(`Image URL validation failed - ${imageUrl} returned HTTP ${response.status} ${response.statusText}.`);
         }
     }
 

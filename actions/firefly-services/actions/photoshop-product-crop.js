@@ -3,7 +3,6 @@
 const BaseService = require('../common/base-service');
 const path = require('path');
 const { StorageType, ImageFormatType } = require("@adobe/photoshop-apis");
-const { downloadFileConcurrently } = require('@adobe/httptransfer');
 const { v4: uuid4 } = require('uuid');
 
 class ProductCropAutomationService extends BaseService {
