@@ -36,6 +36,12 @@ The InDesign Banners Automation system automates the creation of banner variatio
 
 Documentation for [self-hosted and shared service](https://github.com/fornacif/automation-kit/blob/main/indesign-banners-automation.md)
 
+### Illustrator Brochure Automation
+
+The Illustrator Brochure Automation system automates the creation of brochure and banner variations by merging data into Adobe Illustrator templates and exporting them into multiple formats (PDF, PNG, JPEG, SVG, AI, EPS). This process streamlines marketing asset production and ensures consistency across all output variations.
+
+Documentation for [self-hosted and shared service](https://github.com/fornacif/automation-kit/blob/main/illustrator-brochure-automation.md)
+
 ### Photoshop Product Crop
 
 The Photoshop Product Crop feature provides intelligent image cropping capabilities through AI-powered subject detection, ensuring the product remains perfectly centered and prominent in all generated renditions. The system automatically generates a new asset rendition with generated visual.

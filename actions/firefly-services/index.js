@@ -10,6 +10,7 @@ const ACTION_HANDLERS = {
     'firefly-generate-similar': require('./actions/firefly-generate-similar'),
     'photoshop-product-crop': require('./actions/photoshop-product-crop'),
     'indesign-banners-automation': require('./actions/indesign-banners-automation'),
+    'illustrator-brochure-automation': require('./actions/illustrator-brochure-automation'),
     'photoshop-banners-automation': require('./actions/photoshop-banners-automation'),
     'photoshop-action-automation': require('./actions/photoshop-action-automation'),
     'substance-3d-render': require('./actions/substance-3d-render'),

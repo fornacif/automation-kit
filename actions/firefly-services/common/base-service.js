@@ -8,7 +8,7 @@ const { Readable } = require('stream');
 const { error } = require("console");
 
 const DAM_ROOT_PATH = '/content/dam/';
-const DEFAULT_EXPIRY_SECONDS = 180;
+const DEFAULT_EXPIRY_SECONDS = 3600;
 const DEFAULT_FILE_PERMISSIONS = 'rwd';
 
 class BaseService {
@@ -262,6 +262,11 @@ class BaseService {
                 isRunning = result.status === 'not_started' || result.status === 'running';
                 isComplete = !isRunning && result.status !== 'failed';
                 isFailed = result.status === 'failed';
+            } else if (apiType === 'illustrator') {
+                // Illustrator API: partially_succeeded counts as complete (partial outputs available)
+                isComplete = result.status === 'succeeded' || result.status === 'partially_succeeded';
+                isFailed = result.status === 'failed';
+                isRunning = !isComplete && !isFailed;
             } else if (apiType === 'photoshop') {
                 // Photoshop API: check result.outputs[0].status
                 const outputStatus = result.outputs?.[0]?.status;
@@ -283,7 +288,7 @@ class BaseService {
             if (isComplete) {
                 return result;
             } else if (isFailed) {
-                throw new Error(`Job failed: ${result.error?.message || 'Unknown error'}`);
+                throw new Error(`Job failed: ${result.message || result.error?.message || result.errors?.[0]?.message || JSON.stringify(result)}`);
             }
 
             // Reset rate limit counter on successful status check
@@ -300,18 +305,26 @@ class BaseService {
             throw new Error(`Failed to download image: ${downloadResponse.status} ${downloadResponse.statusText}`);
         }
 
+        const filePath = `${uuid4()}/temp`;
+        await this.files.write(filePath, Readable.fromWeb(downloadResponse.body));
+        const { contentLength } = await this.files.getProperties(filePath);
+        const fileStream = await this.files.createReadStream(filePath);
+
         const response = await fetch('https://firefly-api.adobe.io/v2/storage/image', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${this.fireflyServicesToken}`,
                 'x-api-key': this.fireflyServicesClientId,
-                'Content-Type': contentType
+                'Content-Type': contentType,
+                'Content-Length': contentLength
             },
-            body: downloadResponse.body
+            body: Readable.toWeb(fileStream),
+            duplex: 'half'
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to upload image to Firefly storage: ${response.statusText}`);
+            const errorBody = await response.text();
+            throw new Error(`Failed to upload image to Firefly storage: ${response.statusText} - ${errorBody}`);
         }
 
         const result = await response.json();
